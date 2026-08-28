@@ -110,7 +110,9 @@ main{padding:22px 0 64px}
 .hero .label{font-size:13px;color:var(--muted);margin-bottom:2px}
 .hero .figure{font-size:clamp(34px,8vw,52px);font-weight:700;letter-spacing:-.03em;
   line-height:1.05;font-variant-numeric:tabular-nums}
-.hero .note{font-size:13px;color:var(--ink-2);margin-top:6px}
+.hero .note{font-size:13px;color:var(--ink-2);margin-top:8px}
+.hero .note .pl{font-size:20px;font-weight:800;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;vertical-align:-1px}
 .hero-grid{display:grid;gap:18px}
 @media(min-width:760px){.hero-grid{grid-template-columns:1.25fr 1fr;align-items:center}}
 .mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -491,9 +493,10 @@ function render(code, d){
   const f = $('#figRet');
   f.textContent = pct(ret);
   f.className = 'figure ' + cls(ret);
-  $('#figNote').textContent =
-    '1,000만원으로 시작해 지금 ' + won(total) + '원 — ' +
-    (total>=CONFIG.seedMoney ? '+' : '') + won(total-CONFIG.seedMoney) + '원';
+  const pl = total - CONFIG.seedMoney;
+  $('#figNote').innerHTML =
+    '1,000만원으로 시작해 지금 ' + won(total) + '원 &nbsp;:&nbsp; ' +
+    '<b class="pl ' + cls(pl) + '">' + (pl>0?'+':'') + won(pl) + '원</b>';
 
   $('#mTotal').textContent = won(total)+'원';
   $('#mCash').textContent  = won(cash)+'원';

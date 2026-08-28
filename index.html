@@ -20,6 +20,8 @@
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --track:#cde2fb;
+  /* 제목 오렌지(참여 안내 페이지와 통일) · 타이머 민트 */
+  --brand:#d9631a; --timer:#0f9d76;
   --radius:14px;
   --font: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
 }
@@ -32,6 +34,7 @@
     --up:#e66767; --down:#3987e5;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
     --track:#184f95;
+    --brand:#FF9036; --timer:#3FC8A8;
   }
 }
 :root[data-theme="dark"]{
@@ -42,6 +45,7 @@
   --up:#e66767; --down:#3987e5;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
   --track:#184f95;
+  --brand:#FF9036; --timer:#3FC8A8;
 }
 
 *{box-sizing:border-box}
@@ -63,7 +67,7 @@ header.site{
 .guidelink:hover,.guidelink:focus-visible{background:#D97706;outline:none}
 .guidelink.acct{background:#D97706}
 .guidelink.acct:hover,.guidelink.acct:focus-visible{background:#132347}
-.brand{font-weight:800;font-size:25px;letter-spacing:-.02em;margin-right:auto;line-height:1.25}
+.brand{font-weight:800;font-size:25px;letter-spacing:-.02em;margin-right:auto;line-height:1.25;color:var(--brand)}
 .brand small{display:block;font-weight:500;font-size:13px;color:var(--muted);letter-spacing:0;margin-top:2px}
 .badge{
   font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;
@@ -96,7 +100,7 @@ main{padding:22px 0 64px}
   background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
   padding:18px 18px; margin-bottom:16px;
 }
-.card > h2{font-size:16px;margin:0 0 4px;letter-spacing:-.01em}
+.card > h2{font-size:16px;margin:0 0 4px;letter-spacing:-.01em;color:var(--brand)}
 .card > h2 + .sub{margin:0 0 14px;color:var(--muted);font-size:13px}
 .sub{color:var(--muted);font-size:13px}
 .grid{display:grid;gap:16px}
@@ -110,7 +114,7 @@ main{padding:22px 0 64px}
 .hero .label{font-size:13px;color:var(--muted);margin-bottom:2px}
 .hero .figure{
   font-size:clamp(40px,9vw,60px);font-weight:700;letter-spacing:-.03em;line-height:1.05;
-  font-variant-numeric:tabular-nums;
+  font-variant-numeric:tabular-nums; color:var(--timer);
 }
 .hero .note{font-size:13px;color:var(--ink-2);margin-top:6px}
 .hero-grid{display:grid;gap:18px}
@@ -202,7 +206,14 @@ details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-sp
 .cal .d.today{outline:2px solid var(--s1);outline-offset:-2px}
 .cal .d.edge{background:var(--s1);color:#fff;font-weight:700}
 .cal .d small{font-size:9px;font-weight:600;opacity:.8}
-.calmonth{font-weight:700;font-size:14px;margin:0 0 8px}
+.calmonth{font-weight:700;font-size:14px;margin:0 0 8px;color:var(--brand)}
+/* 달력: 월과 월 사이에 세로 구분선 */
+@media(min-width:760px){
+  #calWrap > div + div{border-left:1px solid var(--axis);padding-left:20px}
+}
+@media(max-width:759px){
+  #calWrap > div + div{border-top:1px solid var(--axis);padding-top:16px}
+}
 
 .terms{display:grid;gap:10px}
 @media(min-width:700px){.terms{grid-template-columns:1fr 1fr}}
@@ -289,6 +300,7 @@ const CONFIG = {
     links  : ""    // 분류,제목,주소,설명
   },
 
+  participants : 61, // 행사 참가 인원 (홈 화면 '참가 인원'에 표시)
   topN       : 61,   // 순위 차트에 표시할 인원 (참가자 전원)
   lineN      : 5     // 추이 차트에 표시할 상위 인원
 };
@@ -359,7 +371,7 @@ const CONFIG = {
     <div class="callout">
       <strong>체결 기준</strong> — 그날 밤 24:00까지 제출한 주문은 <b>당일 종가</b>로 체결된 것으로 처리합니다.
       수수료 <span id="ruleFee">0.015%</span>, 매도 시 거래세 <span id="ruleTax">0.18%</span>가 자동 차감되며,
-      한 종목에는 <b>초기 자금의 <span id="ruleWeight">40%</span>(<span id="ruleWeightWon">400만원</span>)</b>까지만 담을 수 있습니다.
+      한 종목에는 <b>초기 자금의 <span id="ruleWeight">40%</span>(<span id="ruleWeightWon">400만원</span>)</b>까지만 매수할 수 있습니다.
     </div>
   </div>
 
@@ -382,7 +394,7 @@ const CONFIG = {
   </div>
 
   <div class="card">
-    <h2>상위 <span id="barTopN">10</span>명 누적 수익률</h2>
+    <h2>누적 수익률순</h2>
     <p class="sub" id="barAsOf">집계 기준일 —</p>
     <div class="chartbox">
       <svg class="chart" id="barChart" role="img" aria-label="상위 참가자 누적 수익률 막대그래프"></svg>
@@ -863,7 +875,16 @@ function drawBar(){
   svg.style.maxHeight = (H*1.05)+'px';
 
   const vals=data.map(d=>d.cum);
-  const ticks=niceTicks(Math.min(0,...vals), Math.max(0,...vals), 5);
+  // 개막 직후처럼 값이 전부 0 ~ -0.01% 로 몰려 있으면 축이 0.01%p 폭으로 확대되어
+  // 막대가 화면을 가득 채우고 라벨이 겹친다. 최소 축 폭을 강제해 그것을 막는다.
+  let vlo=Math.min(0,...vals), vhi=Math.max(0,...vals);
+  const MIN_SPAN=1;                       // 최소 1%p
+  if(vhi-vlo < MIN_SPAN){
+    const mid=(vhi+vlo)/2;
+    vlo=Math.min(0, mid-MIN_SPAN/2);
+    vhi=Math.max(0, mid+MIN_SPAN/2);
+  }
+  const ticks=niceTicks(vlo, vhi, 5);
   const lo=ticks[0], hi=ticks[ticks.length-1];
   const X = v => padL + (v-lo)/(hi-lo) * (W-padL-padR);
   const zero = X(0);
@@ -896,7 +917,8 @@ function drawBar(){
     svg.appendChild(nm);
 
     // 값은 막대 끝에 직접 표기 (색만으로 의미를 전달하지 않기 위함)
-    const vx = pos? X(d.cum)+8 : X(d.cum)-8;
+    // 값 라벨이 왼쪽 닉네임 칸을 침범하지 않도록 최소 위치를 지킨다
+    const vx = pos ? X(d.cum)+8 : Math.max(padL+40, X(d.cum)-8);
     const vt=el('text',{x:vx,y:y+15,fill:cssv('--ink'),'font-size':12.5,'font-weight':600,
       'text-anchor':pos?'start':'end','font-family':'var(--font)','font-variant-numeric':'tabular-nums'});
     vt.textContent=fmtPct(d.cum); svg.appendChild(vt);
@@ -1212,7 +1234,7 @@ function renderPhases(){
     ['③ 중간 점검', `2주차 종료 시점 · 중간 순위 게시, 상위 참가자 매매 사례 공유`],
     ['④ 지필평가', `9/15(화) 15:20~16:00 (잠정) · 경제·주식 기본 상식 40점 (객관식 + 단답형)`],
     ['⑤ 보고서 제출', `폐막 후 1주 이내 · 종목 선정 근거, 매매 판단, 복기 내용`],
-    ['⑥ 시상 및 생활기록부 기재', `합산 점수 산출 → 시상 → 창의적 체험활동 기재`]
+    ['⑥ 활동내용 평가 및 생활기록부 기재', `합산 점수 산출 → 활동내용 피드백 → 생활기록부 기재`]
   ];
   $('#phaseTable').innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
 }
@@ -1446,7 +1468,6 @@ function applyConfigText(){
   $('#ruleTax').textContent = (CONFIG.taxRate*100).toFixed(2)+'%';
   $('#ruleWeight').textContent = Math.round(CONFIG.maxWeight*100)+'%';
   $('#ruleWeightWon').textContent = fmtWonShort(CONFIG.seedMoney*CONFIG.maxWeight)+'원';
-  $('#barTopN').textContent = CONFIG.topN;
   $('#lineTopN').textContent = CONFIG.lineN;
   $('#footNote').textContent = `${CONFIG.schoolName} 인문과학부 · 이 페이지의 모든 수치는 가상 거래 기록입니다.`;
   [['#btnOrder',CONFIG.formOrder],['#btnReport',CONFIG.formReport],
@@ -1514,7 +1535,7 @@ async function loadAll(){
   const asOf = last? last.replace(/-/g,'.') : '—';
   $('#barAsOf').textContent = `집계 기준일 ${asOf}` + (live?'':' (샘플)');
   $('#rankAsOf').textContent = `집계 기준일 ${asOf} · 참가 ${STATE.rank.length}명` + (live?'':' (샘플)');
-  $('#miniCount').textContent = STATE.rank.length+'명';
+  $('#miniCount').textContent = (CONFIG.participants || STATE.rank.length)+'명';
 
   renderRank(); drawBar(); drawLine(); drawHist();
 }
