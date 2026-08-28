@@ -502,7 +502,13 @@ const CONFIG = {
     <p class="sub">10개 업종의 시가총액 상위 5개 종목입니다. 매매주문 폼의 드롭다운과 순서가 동일합니다</p>
     <div class="toolrow">
       <input type="search" id="univSearch" placeholder="종목 검색 (예: 삼성)" aria-label="종목 검색" style="min-width:200px">
+      <a class="btn ghost" href="https://drive.google.com/drive/folders/1eXq_d7xdf1-fP3WK7rOohi0jU-6q2mhJ?usp=drive_link" target="_blank" rel="noopener">📕 거래종목 탐구 안내서</a>
       <span class="sub" id="univCount"></span>
+    </div>
+    <div class="callout">
+      <strong>종목을 고르기 전에 탐구 안내서를 먼저 읽어 보세요.</strong>
+      50종목을 <b>종목당 한 쪽씩</b> 정리해 두었습니다. 무슨 회사이고 무엇으로 돈을 버는지 알고 사는 것과
+      이름만 보고 사는 것은 보고서에서 큰 차이가 납니다.
     </div>
     <div class="tablewrap"><table id="univTable">
       <thead><tr><th style="width:150px">업종</th><th>종목 (시가총액 순)</th></tr></thead>
@@ -1308,6 +1314,7 @@ function renderUniverse(){
 
 /* ---------- 자료실 ---------- */
 const DEFAULT_LINKS=[
+  {cat:'행사 자료', title:'거래종목 탐구 안내서', url:'https://drive.google.com/drive/folders/1eXq_d7xdf1-fP3WK7rOohi0jU-6q2mhJ?usp=drive_link', desc:'거래 대상 <b>50종목을 종목당 한 쪽씩</b> 정리한 교재입니다. 종목을 고르기 전에 어떤 회사인지 먼저 읽어 보세요. 오리엔테이션 자료도 같은 폴더에 있습니다.', ico:'📕'},
   {cat:'투자자 교육', title:'전국투자자교육협의회', url:'https://www.kcie.or.kr', desc:'청소년 대상 무료 금융투자 교육 자료와 온라인 강의를 제공합니다.', ico:'🎓'},
   {cat:'투자자 교육', title:'금융감독원 금융교육', url:'https://www.fss.or.kr', desc:'금융 소비자 교육 자료, 금융생활 안내서를 내려받을 수 있습니다.', ico:'🏛'},
   {cat:'시장 데이터', title:'한국거래소 KRX', url:'https://www.krx.co.kr', desc:'코스피·코스닥 지수와 상장 종목 정보의 1차 출처입니다.', ico:'📈'},
