@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>내 계좌 · 제1회 주식 포트폴리오 모의 운용 프로젝트</title>
+<meta name="description" content="참가코드로 내 보유종목·예수금·체결내역·수익률을 확인합니다.">
+<meta name="robots" content="noindex, nofollow">
+<style>
+/* ============================================================
+   index.html 과 같은 색 토큰 — 상승=적색, 하락=청색 (한국 시장 관행)
+   ============================================================ */
+:root{
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --surface-2:#f3f3f0;
+  --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --up:#d03b3b; --down:#2a78d6; --flat:#898781;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
+  --track:#cde2fb;
+  --radius:14px;
+  --font: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+    --up:#e66767; --down:#3987e5;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --track:#184f95;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
+  --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+  --up:#e66767; --down:#3987e5;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --track:#184f95;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font-family:var(--font);
+  font-size:15px;line-height:1.65;-webkit-text-size-adjust:100%}
+a{color:var(--s1)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+
+header.site{background:var(--surface);border-bottom:1px solid var(--border)}
+.hd{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
+.brand{font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1.25}
+.brand small{display:block;font-weight:500;font-size:12.5px;color:var(--muted);
+  letter-spacing:0;margin-top:2px}
+.navlinks{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.navlinks a{text-decoration:none;font-size:13.5px;font-weight:700;color:var(--ink-2);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+  padding:7px 13px;white-space:nowrap}
+.navlinks a:hover{border-color:var(--s1);color:var(--s1)}
+.navlinks a.here{background:#132347;color:#fff;border-color:transparent}
+.iconbtn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);
+  border-radius:10px;padding:6px 10px;font-size:13px;cursor:pointer;font-family:inherit}
+.iconbtn:hover{background:var(--surface-2)}
+.badge{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;
+  border:1px solid var(--border);color:var(--ink-2);background:var(--surface-2);white-space:nowrap}
+.badge.live{color:#fff;background:var(--good);border-color:transparent}
+.badge.soon{color:#0b0b0b;background:var(--warn);border-color:transparent}
+
+main{padding:22px 0 64px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;margin-bottom:16px}
+.card > h2{font-size:16px;margin:0 0 4px;letter-spacing:-.01em}
+.card > h2 + .sub{margin:0 0 14px;color:var(--muted);font-size:13px}
+.sub{color:var(--muted);font-size:13px}
+
+/* ---------- 코드 입력 ---------- */
+.gate{max-width:440px;margin:34px auto;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);padding:26px 24px}
+.gate h1{font-size:21px;margin:0 0 6px;letter-spacing:-.02em}
+.gate p.g{color:var(--ink-2);font-size:13.5px;margin:0 0 18px}
+.gate label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+#codeInput{width:100%;font-family:ui-monospace,"Menlo",monospace;font-size:23px;
+  letter-spacing:.16em;text-align:center;text-transform:uppercase;
+  padding:13px 12px;border-radius:11px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--ink)}
+#codeInput:focus{outline:2px solid var(--s1);outline-offset:1px}
+.remember{display:flex;gap:8px;align-items:center;margin:13px 0 4px;
+  font-size:13px;color:var(--ink-2);cursor:pointer}
+.remember input{width:16px;height:16px;accent-color:var(--s1);cursor:pointer}
+.gate .btn{width:100%;margin-top:14px;padding:12px}
+.gerr{color:var(--crit);font-size:13px;margin-top:11px;min-height:19px;font-weight:600}
+.gnote{margin-top:18px;padding-top:16px;border-top:1px solid var(--grid);
+  font-size:12.5px;color:var(--muted);line-height:1.7}
+
+.btn{font-family:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:10px;
+  border:1px solid transparent;background:var(--s1);color:#fff;cursor:pointer;
+  text-decoration:none;display:inline-block;text-align:center}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--border)}
+.btn:hover{filter:brightness(1.06)}
+
+/* ---------- 요약 ---------- */
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px 20px;margin-bottom:16px}
+.hero .who{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+.hero .code{font-family:ui-monospace,monospace;font-weight:700;font-size:15px;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:3px 10px}
+.hero .label{font-size:13px;color:var(--muted);margin-bottom:2px}
+.hero .figure{font-size:clamp(34px,8vw,52px);font-weight:700;letter-spacing:-.03em;
+  line-height:1.05;font-variant-numeric:tabular-nums}
+.hero .note{font-size:13px;color:var(--ink-2);margin-top:6px}
+.hero-grid{display:grid;gap:18px}
+@media(min-width:760px){.hero-grid{grid-template-columns:1.25fr 1fr;align-items:center}}
+.mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.mini div{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface-2)}
+.mini .k{font-size:11px;color:var(--muted)}
+.mini .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--grid);white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--surface-2)}
+.up{color:var(--up);font-weight:600}
+.down{color:var(--down);font-weight:600}
+.flat{color:var(--muted)}
+.tagb{font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--ink-2)}
+.tagb.buy{background:color-mix(in srgb,var(--up) 15%,transparent);color:var(--up);border-color:transparent}
+.tagb.sell{background:color-mix(in srgb,var(--down) 15%,transparent);color:var(--down);border-color:transparent}
+
+.callout{border:1px solid var(--border);border-left:3px solid var(--s1);background:var(--surface-2);
+  border-radius:0 10px 10px 0;padding:12px 14px;font-size:13.5px;color:var(--ink-2);margin:12px 0}
+.callout.warnc{border-left-color:var(--warn)}
+.callout strong{color:var(--ink)}
+.empty{padding:26px 10px;text-align:center;color:var(--muted);font-size:13.5px}
+.chartbox{position:relative}
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+.srcnote{font-size:12px;color:var(--muted);margin-top:10px}
+.hidden{display:none !important}
+footer.site{border-top:1px solid var(--border);padding:20px 0;color:var(--muted);font-size:12.5px}
+@media print{header.site .navlinks,.toolrow{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     ⚙️ 설정 — 구글시트 [계좌요약]·[보유종목]·[체결내역]·[일별추이] 를
+     '파일 → 공유 → 웹에 게시 → CSV' 로 게시한 뒤 그 주소를 넣으세요.
+     비워 두면 예시 화면이 나옵니다.
+     ============================================================ -->
+<script>
+const CONFIG = {
+  schoolName : "영신여자고등학교",
+  seedMoney  : 10000000,
+  endDate    : "2026-09-23",
+
+  sheets: {
+    summary : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_LtMuXsmHm351v3AutGaNDJ1vS6x9B8MjPmNnIMTN4xcI5i67TwKJY2Bq2jlq3LPXvctgJqFKkVeV/pub?gid=1822962705&single=true&output=csv",   // 계좌요약 : 참가코드,기준일,예수금,주식평가액,총평가액,누적수익률,실현손익,거래일수,체결건수
+    holding : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_LtMuXsmHm351v3AutGaNDJ1vS6x9B8MjPmNnIMTN4xcI5i67TwKJY2Bq2jlq3LPXvctgJqFKkVeV/pub?gid=2057327082&single=true&output=csv",   // 보유종목 : 참가코드,종목,보유수량,평균단가,현재가,평가금액,평가손익,수익률
+    fills   : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_LtMuXsmHm351v3AutGaNDJ1vS6x9B8MjPmNnIMTN4xcI5i67TwKJY2Bq2jlq3LPXvctgJqFKkVeV/pub?gid=1131888374&single=true&output=csv",   // 체결내역 : 참가코드,거래일,구분,종목,신청수량,체결수량,체결단가,거래대금,수수료,거래세,정산금액,비고
+    trend   : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_LtMuXsmHm351v3AutGaNDJ1vS6x9B8MjPmNnIMTN4xcI5i67TwKJY2Bq2jlq3LPXvctgJqFKkVeV/pub?gid=1968218169&single=true&output=csv"    // 일별추이 : 참가코드,거래일,총평가액,누적수익률   (선택 — 없으면 그래프만 숨김)
+  }
+};
+</script>
+
+<header class="site">
+  <div class="wrap">
+    <div class="hd">
+      <div class="brand">
+        내 계좌
+        <small>제1회 주식 포트폴리오 모의 운용 프로젝트</small>
+      </div>
+      <div class="navlinks">
+        <a href="./index.html">순위표 · 상황판</a>
+        <a href="./guide.html">참여 안내</a>
+        <a href="./me.html" class="here">내 계좌</a>
+        <button class="iconbtn" id="themeBtn" aria-label="화면 밝기 전환">◐ 화면</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ 참가코드 입력 ============ -->
+  <section id="gateView">
+    <div class="gate">
+      <h1>참가코드를 입력하세요</h1>
+      <p class="g">문자로 받은 <b>MJ + 세 자리 숫자</b> 형식의 코드입니다.
+        매매주문서에 적는 것과 같은 코드예요.</p>
+
+      <label for="codeInput">참가코드</label>
+      <input id="codeInput" type="text" inputmode="latin" autocomplete="off"
+             spellcheck="false" maxlength="12" placeholder="MJ000" aria-label="참가코드">
+
+      <label class="remember">
+        <input type="checkbox" id="rememberChk" checked>
+        <span>이 기기에 기억하기 (다음부터 바로 열림)</span>
+      </label>
+
+      <button class="btn" id="openBtn">내 계좌 열기</button>
+      <div class="gerr" id="gateErr" role="alert"></div>
+
+      <div class="gnote">
+        <b>코드를 잊었다면</b> — 처음에 받은 문자를 확인하거나 담당 선생님께 문의하세요.<br>
+        <b>남의 코드는 넣지 마세요</b> — 다른 사람의 계좌를 들여다보는 것은
+        이 활동의 평가 대상인 <b>본인 판단</b>과 어긋납니다.<br>
+        공용 컴퓨터에서는 '기억하기'를 꺼 주세요.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 계좌 화면 ============ -->
+  <section id="acctView" class="hidden">
+
+    <div class="hero">
+      <div class="who">
+        <span class="code" id="myCode">—</span>
+        <span class="badge" id="dataBadge">샘플 데이터</span>
+        <span class="sub" id="asOf">기준일 —</span>
+        <button class="iconbtn" id="switchBtn" style="margin-left:auto">코드 바꾸기</button>
+      </div>
+      <div class="hero-grid">
+        <div>
+          <div class="label">누적 수익률</div>
+          <div class="figure" id="figRet">—</div>
+          <div class="note" id="figNote">—</div>
+        </div>
+        <div class="mini">
+          <div><div class="k">총 평가금액</div><div class="v" id="mTotal">—</div></div>
+          <div><div class="k">예수금 (남은 현금)</div><div class="v" id="mCash">—</div></div>
+          <div><div class="k">주식 평가액</div><div class="v" id="mStock">—</div></div>
+          <div><div class="k">주문한 날 / 체결</div><div class="v" id="mDays">—</div></div>
+        </div>
+      </div>
+      <div class="callout" id="asOfNote">
+        <strong>이 숫자는 <span id="asOfDate">—</span> 종가 기준입니다.</strong>
+        오늘 밤에 낸 주문은 <b>내일 아침에 반영</b>됩니다. 방금 주문했는데 안 바뀌었다고
+        걱정하지 않아도 됩니다. 지금 보이는 <b>예수금이 오늘 주문에 쓸 수 있는 현금</b>입니다.
+      </div>
+      <div class="callout" id="zeroWarn" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>보유 종목</h2>
+      <p class="sub" id="holdSub">지금 가지고 있는 종목입니다. 평균단가에는 매수 수수료가 포함돼 있습니다.</p>
+      <div class="tablewrap">
+        <table id="holdTable">
+          <thead><tr>
+            <th>종목</th><th class="num">보유수량</th><th class="num">평균단가</th>
+            <th class="num">현재가</th><th class="num">평가금액</th>
+            <th class="num">평가손익</th><th class="num">수익률</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty hidden" id="holdEmpty">아직 가지고 있는 종목이 없습니다. 예수금 전액이 현금으로 남아 있어요.</div>
+    </div>
+
+    <div class="card" id="trendCard">
+      <h2>내 수익률 추이</h2>
+      <p class="sub">거래일마다 그날 종가로 평가한 값입니다.</p>
+      <div class="chartbox">
+        <svg class="chart" id="trendChart" role="img" aria-label="내 누적 수익률 추이"></svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>체결 내역</h2>
+      <p class="sub">실제로 체결된 주문만 나옵니다. 무효·미체결된 주문은 여기에 없습니다.</p>
+      <div class="tablewrap">
+        <table id="fillTable">
+          <thead><tr>
+            <th>거래일</th><th>구분</th><th>종목</th>
+            <th class="num">신청</th><th class="num">체결</th><th class="num">단가</th>
+            <th class="num">수수료·세금</th><th class="num">정산금액</th><th>비고</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty hidden" id="fillEmpty">아직 체결된 주문이 없습니다.</div>
+      <div class="srcnote">정산금액 — 매수는 빠져나간 돈(음수), 매도는 들어온 돈(양수)입니다.
+        수수료 0.015%, 매도 시 거래세 0.18%가 이미 반영돼 있습니다.</div>
+    </div>
+
+    <div class="card">
+      <h2>이 화면을 어떻게 쓰면 좋을까</h2>
+      <div class="callout">
+        <strong>주문을 내기 전에 예수금을 먼저 보세요.</strong>
+        가진 현금보다 많이 주문하면 살 수 있는 만큼만 체결되고 나머지는 자동 취소됩니다.
+        한 종목에 담을 수 있는 한도는 <b>400만원</b>(초기자금의 40%)입니다.
+      </div>
+      <div class="callout warnc">
+        <strong>보고서를 쓸 때 이 화면이 그대로 자료가 됩니다.</strong>
+        배점이 가장 큰 항목은 <b>손실 매매 복기(6점)</b>입니다.
+        손실이 난 종목의 체결 내역을 보면서 '그때 왜 그렇게 판단했는지'를 적어 두면
+        9월 28일에 훨씬 수월합니다.
+      </div>
+      <p class="sub" style="margin:0">
+        숫자가 순위표와 다르거나 이상하면
+        <a href="./index.html">상황판</a>의 질문 폼으로 알려 주세요. 바로 확인하겠습니다.
+      </p>
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div>영신여자고등학교 인문과학부 · 이 페이지의 모든 수치는 가상 거래 기록입니다.</div>
+    <div style="margin-top:6px">이 화면에는 학번·성명·연락처가 표시되지 않습니다.
+      실제 투자 권유가 아니며, 특정 종목의 매수·매도를 추천하지 않습니다.</div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   0. 유틸
+   ============================================================ */
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const won = v => Math.round(v).toLocaleString('ko-KR');
+const pct = v => (v>0?'+':'') + Number(v).toFixed(2) + '%';
+const cls = v => v>0.0001 ? 'up' : (v<-0.0001 ? 'down' : 'flat');
+const num = v => { const n=parseFloat(String(v).replace(/[,%\s원]/g,'')); return isNaN(n)?0:n; };
+/** 구글시트가 날짜를 어떤 형식으로 내보내든 2026-08-27 로 맞춘다.
+    (2026. 8. 27 / 2026.8.27 / 2026/8/27 모두 허용 — 안 그러면 9월 3일이 9월 28일보다 뒤로 정렬됨) */
+const ymd = s => {
+  s = String(s??'').trim();
+  const m = s.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  return m ? m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0') : s;
+};
+const dot = s => ymd(s).replace(/-/g,'.');
+const CODE_RE = /^[A-Za-z]{2}[0-9]{3}$/;
+const LSKEY = 'mj-mycode';
+
+/* ---------- 화면 밝기 ---------- */
+(function(){
+  const saved = (()=>{ try{ return localStorage.getItem('mj-theme'); }catch(e){ return null; } })();
+  if(saved) document.documentElement.setAttribute('data-theme', saved);
+  $('#themeBtn').addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try{ localStorage.setItem('mj-theme', next); }catch(e){}
+  });
+})();
+
+/* ============================================================
+   1. CSV 로더
+   ============================================================ */
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
+      else cur+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===','){ row.push(cur); cur=''; }
+      else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+      else if(c!=='\r') cur+=c;
+    }
+  }
+  if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+  if(!rows.length) return [];
+  const head = rows[0].map(h=>h.trim());
+  return rows.slice(1).filter(r=>r.some(c=>c.trim()!=='')).map(r=>{
+    const o={}; head.forEach((h,i)=> o[h]=(r[i]??'').trim()); return o;
+  });
+}
+async function loadSheet(url){
+  if(!url) return null;
+  try{
+    const res = await fetch(url,{cache:'no-store'});
+    if(!res.ok) throw new Error(res.status);
+    return parseCSV(await res.text());
+  }catch(e){ console.warn('시트 불러오기 실패:', url, e); return null; }
+}
+function pick(o, ...keys){
+  for(const k of keys) if(o[k]!==undefined && o[k]!=='') return o[k];
+  return '';
+}
+
+/* ============================================================
+   2. 상태
+   ============================================================ */
+const DATA = { summary:null, holding:null, fills:null, trend:null, isDemo:true, loaded:false };
+
+/* ============================================================
+   3. 샘플 데이터 — 시트를 붙이기 전에도 화면을 볼 수 있게
+   ============================================================ */
+function mulberry(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
+  let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function demoFor(code){
+  const seed = [...code].reduce((a,c)=>a*31+c.charCodeAt(0),7);
+  const rnd = mulberry(seed);
+  const pool = [['삼성전자',71800],['SK하이닉스',203500],['KB금융',86400],
+                ['현대차',241000],['NAVER',187600],['한화에어로스페이스',742000],
+                ['셀트리온',176300],['HD현대중공업',384500]];
+  const nHold = 2 + Math.floor(rnd()*3);
+  const days = ['2026-08-27','2026-08-28'];
+
+  let cash = CONFIG.seedMoney, holding = [], fills = [];
+  for(let i=0;i<nHold;i++){
+    const [nm, base] = pool[Math.floor(rnd()*pool.length)];
+    if(holding.some(h=>h.종목===nm)) continue;
+    const qty = 3 + Math.floor(rnd()*22);
+    const buyPx = Math.round(base*(0.97+rnd()*0.05));
+    const amt = qty*buyPx, fee = Math.round(amt*0.00015);
+    const nowPx = Math.round(buyPx*(0.94+rnd()*0.13));
+    cash -= (amt+fee);
+    holding.push({ 참가코드:code, 종목:nm, 보유수량:qty, 평균단가:Math.round((amt+fee)/qty),
+      현재가:nowPx, 평가금액:qty*nowPx, 평가손익:qty*nowPx-(amt+fee),
+      수익률:((qty*nowPx-(amt+fee))/(amt+fee)*100).toFixed(2) });
+    fills.push({ 참가코드:code, 거래일:days[Math.floor(rnd()*days.length)], 구분:'매수',
+      종목:nm, 신청수량:qty, 체결수량:qty, 체결단가:buyPx, 거래대금:amt,
+      수수료:fee, 거래세:0, 정산금액:-(amt+fee), 비고:'정상체결' });
+  }
+  const stock = holding.reduce((s,h)=>s+h.평가금액,0);
+  const total = cash + stock;
+  const ret = (total-CONFIG.seedMoney)/CONFIG.seedMoney*100;
+
+  const trend = days.map((d,i)=>({ 참가코드:code, 거래일:d,
+    총평가액: Math.round(CONFIG.seedMoney + (total-CONFIG.seedMoney)*((i+1)/days.length)),
+    누적수익률: (ret*((i+1)/days.length)).toFixed(2) }));
+
+  return {
+    summary: [{ 참가코드:code, 기준일:days[days.length-1], 예수금:Math.round(cash),
+      주식평가액:Math.round(stock), 총평가액:Math.round(total), 누적수익률:ret.toFixed(2),
+      실현손익:0, 거래일수:days.length, 체결건수:fills.length }],
+    holding, fills, trend
+  };
+}
+
+/* ============================================================
+   4. 자료 불러오기
+   ============================================================ */
+async function ensureData(){
+  if(DATA.loaded) return;
+  const s = CONFIG.sheets;
+  const [su, ho, fi, tr] = await Promise.all([
+    loadSheet(s.summary), loadSheet(s.holding), loadSheet(s.fills), loadSheet(s.trend)
+  ]);
+  if(su && su.length){
+    DATA.summary=su; DATA.holding=ho||[]; DATA.fills=fi||[]; DATA.trend=tr||[];
+    DATA.isDemo=false;
+  }
+  DATA.loaded = true;
+}
+
+/** 해당 코드의 자료를 뽑아온다 (없으면 null) */
+function rowsFor(code){
+  if(DATA.isDemo) return demoFor(code);
+  const of = arr => (arr||[]).filter(r => String(pick(r,'참가코드','code')).trim().toUpperCase()===code);
+  const su = of(DATA.summary);
+  if(!su.length) return null;
+  return { summary:su, holding:of(DATA.holding), fills:of(DATA.fills), trend:of(DATA.trend) };
+}
+
+/* ============================================================
+   5. 그리기
+   ============================================================ */
+function render(code, d){
+  const s = d.summary[0];
+  const cash  = num(pick(s,'예수금','cash'));
+  const stock = num(pick(s,'주식평가액','stock'));
+  const total = num(pick(s,'총평가액','total'));
+  const ret   = num(pick(s,'누적수익률','ret'));
+  const nDays = num(pick(s,'거래일수','days'));
+  const nFill = num(pick(s,'체결건수','fills'));
+  const asOf  = pick(s,'기준일','date');
+
+  $('#myCode').textContent = code;
+  $('#asOf').textContent = asOf ? '기준일 ' + dot(asOf) : '기준일 —';
+  $('#asOfDate').textContent = asOf ? dot(asOf) : '최근 거래일';
+
+  const badge = $('#dataBadge');
+  badge.textContent = DATA.isDemo ? '샘플 데이터' : '실시간 집계';
+  badge.className = 'badge ' + (DATA.isDemo ? 'soon' : 'live');
+
+  const f = $('#figRet');
+  f.textContent = pct(ret);
+  f.className = 'figure ' + cls(ret);
+  $('#figNote').textContent =
+    '1,000만원으로 시작해 지금 ' + won(total) + '원 — ' +
+    (total>=CONFIG.seedMoney ? '+' : '') + won(total-CONFIG.seedMoney) + '원';
+
+  $('#mTotal').textContent = won(total)+'원';
+  $('#mCash').textContent  = won(cash)+'원';
+  $('#mStock').textContent = won(stock)+'원';
+  $('#mDays').textContent  = nDays+'일 / '+nFill+'건';
+
+  // 0점 경고 — 4일 미만 규칙
+  const zw = $('#zeroWarn');
+  if(nDays === 0){
+    zw.style.display='';
+    zw.innerHTML = '<strong>아직 한 번도 주문하지 않았습니다.</strong> '+
+      '행사기간 내 주문 미제출·무거래는 수익률 점수가 <b>0점</b>으로 처리됩니다. '+
+      '거래일 밤 20:00~24:00 사이에 매매주문서를 내 주세요.';
+  }else if(nDays < 4){
+    zw.style.display='';
+    zw.innerHTML = '<strong>주문한 날이 '+nDays+'일입니다.</strong> '+
+      '행사기간 동안 <b>4일 이상</b> 주문하지 않으면 수익률 점수가 0점으로 처리됩니다. '+
+      '앞으로 최소 '+(4-nDays)+'일은 더 주문해 주세요.';
+  }else{
+    zw.style.display='none';
+  }
+
+  renderHolding(d.holding);
+  renderFills(d.fills);
+  renderTrend(d.trend);
+
+  $('#gateView').classList.add('hidden');
+  $('#acctView').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+function renderHolding(rows){
+  const tb = $('#holdTable tbody');
+  rows = (rows||[]).filter(r => num(pick(r,'보유수량','qty'))>0);
+  if(!rows.length){
+    tb.innerHTML=''; $('#holdEmpty').classList.remove('hidden');
+    $('#holdTable').classList.add('hidden'); return;
+  }
+  $('#holdEmpty').classList.add('hidden');
+  $('#holdTable').classList.remove('hidden');
+  rows.sort((a,b)=> num(pick(b,'평가금액','value')) - num(pick(a,'평가금액','value')));
+  tb.innerHTML = rows.map(r=>{
+    const pl  = num(pick(r,'평가손익','pl'));
+    const rt  = num(pick(r,'수익률','ret'));
+    return '<tr>'+
+      '<td><b>'+esc(pick(r,'종목','name'))+'</b></td>'+
+      '<td class="num">'+won(num(pick(r,'보유수량','qty')))+'주</td>'+
+      '<td class="num">'+won(num(pick(r,'평균단가','avg')))+'</td>'+
+      '<td class="num">'+won(num(pick(r,'현재가','px')))+'</td>'+
+      '<td class="num">'+won(num(pick(r,'평가금액','value')))+'</td>'+
+      '<td class="num '+cls(pl)+'">'+(pl>0?'+':'')+won(pl)+'</td>'+
+      '<td class="num '+cls(rt)+'">'+pct(rt)+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function renderFills(rows){
+  const tb = $('#fillTable tbody');
+  rows = (rows||[]).slice();
+  if(!rows.length){
+    tb.innerHTML=''; $('#fillEmpty').classList.remove('hidden');
+    $('#fillTable').classList.add('hidden'); return;
+  }
+  $('#fillEmpty').classList.add('hidden');
+  $('#fillTable').classList.remove('hidden');
+  rows.sort((a,b)=>{
+    const da=ymd(pick(a,'거래일','date')), db=ymd(pick(b,'거래일','date'));
+    return da<db ? 1 : (da>db ? -1 : 0);
+  });
+  tb.innerHTML = rows.map(r=>{
+    const side = pick(r,'구분','side');
+    const buy  = side.indexOf('매수')>=0;
+    const st   = num(pick(r,'정산금액','net'));
+    const fee  = num(pick(r,'수수료','fee')) + num(pick(r,'거래세','tax'));
+    return '<tr>'+
+      '<td>'+esc(dot(pick(r,'거래일','date')))+'</td>'+
+      '<td><span class="tagb '+(buy?'buy':'sell')+'">'+esc(side)+'</span></td>'+
+      '<td><b>'+esc(pick(r,'종목','name'))+'</b></td>'+
+      '<td class="num">'+won(num(pick(r,'신청수량','ask')))+'</td>'+
+      '<td class="num">'+won(num(pick(r,'체결수량','qty')))+'</td>'+
+      '<td class="num">'+won(num(pick(r,'체결단가','px')))+'</td>'+
+      '<td class="num">'+won(fee)+'</td>'+
+      '<td class="num '+cls(st)+'">'+(st>0?'+':'')+won(st)+'</td>'+
+      '<td class="sub">'+esc(pick(r,'비고','note'))+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function renderTrend(rows){
+  const card = $('#trendCard'), svg = $('#trendChart');
+  rows = (rows||[]).slice().sort((a,b)=>{
+    const da=ymd(pick(a,'거래일','date')), db=ymd(pick(b,'거래일','date'));
+    return da<db ? -1 : (da>db ? 1 : 0);
+  });
+  if(rows.length < 2){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+
+  const pts = rows.map(r=>({ d:ymd(pick(r,'거래일','date')), v:num(pick(r,'누적수익률','ret')) }));
+  const W=760, H=240, PL=48, PR=16, PT=16, PB=30;
+  const iw = W-PL-PR, ih = H-PT-PB;
+  let lo = Math.min(0, ...pts.map(p=>p.v)), hi = Math.max(0, ...pts.map(p=>p.v));
+  if(hi-lo < 1){ hi += 0.5; lo -= 0.5; }
+  const pad=(hi-lo)*0.15; hi+=pad; lo-=pad;
+  const X = i => PL + (pts.length===1 ? iw/2 : iw*i/(pts.length-1));
+  const Y = v => PT + ih*(hi-v)/(hi-lo);
+
+  let g='';
+  for(let k=0;k<=4;k++){
+    const v = hi-(hi-lo)*k/4, y=Y(v);
+    g += '<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+y.toFixed(1)+
+         '" stroke="var(--grid)" stroke-width="1"/>'+
+         '<text x="'+(PL-8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11" '+
+         'fill="var(--muted)">'+v.toFixed(1)+'%</text>';
+  }
+  if(lo<0 && hi>0){
+    g += '<line x1="'+PL+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-PR)+'" y2="'+Y(0).toFixed(1)+
+         '" stroke="var(--axis)" stroke-width="1.5"/>';
+  }
+  const last = pts[pts.length-1];
+  const color = last.v>0 ? 'var(--up)' : (last.v<0 ? 'var(--down)' : 'var(--muted)');
+  const dpath = pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
+  g += '<path d="'+dpath+'" fill="none" stroke="'+color+'" stroke-width="2.5" '+
+       'stroke-linejoin="round" stroke-linecap="round"/>';
+  pts.forEach((p,i)=>{
+    g += '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+
+         (i===pts.length-1?4.5:2.5)+'" fill="'+color+'"/>';
+  });
+  const step = Math.ceil(pts.length/6);
+  pts.forEach((p,i)=>{
+    if(i%step && i!==pts.length-1) return;
+    g += '<text x="'+X(i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" '+
+         'fill="var(--muted)">'+esc(p.d.slice(5).replace('-','.'))+'</text>';
+  });
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  svg.innerHTML = g;
+}
+
+/* ============================================================
+   6. 코드 입력 처리
+   ============================================================ */
+async function openAccount(code, fromSaved){
+  const err = $('#gateErr');
+  code = String(code||'').trim().toUpperCase();
+  if(!CODE_RE.test(code)){
+    err.textContent = '코드 형식이 맞지 않습니다. MJ001 처럼 영문 두 자 + 숫자 세 자로 넣어 주세요.';
+    return;
+  }
+  err.textContent = '불러오는 중…';
+  await ensureData();
+
+  const d = rowsFor(code);
+  if(!d){
+    err.textContent = code + ' 은(는) 참가자 명단에 없는 코드입니다. 문자로 받은 코드를 다시 확인해 주세요.';
+    if(fromSaved){ try{ localStorage.removeItem(LSKEY); }catch(e){} }
+    return;
+  }
+  err.textContent = '';
+  if($('#rememberChk').checked || fromSaved){
+    try{ localStorage.setItem(LSKEY, code); }catch(e){}
+  }
+  render(code, d);
+}
+
+$('#openBtn').addEventListener('click', ()=> openAccount($('#codeInput').value, false));
+$('#codeInput').addEventListener('keydown', e=>{ if(e.key==='Enter') openAccount($('#codeInput').value, false); });
+$('#switchBtn').addEventListener('click', ()=>{
+  try{ localStorage.removeItem(LSKEY); }catch(e){}
+  $('#acctView').classList.add('hidden');
+  $('#gateView').classList.remove('hidden');
+  $('#codeInput').value=''; $('#gateErr').textContent='';
+  $('#codeInput').focus();
+});
+
+/* 저장된 코드가 있으면 바로 연다 */
+(function(){
+  let saved=null;
+  try{ saved = localStorage.getItem(LSKEY); }catch(e){}
+  if(saved && CODE_RE.test(saved)){ openAccount(saved, true); }
+  else { $('#codeInput').focus(); }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="제1회 주식 포트폴리오 모의 운용 프로젝트 참여 안내 · 영신여자고등학교">
+<title>주식 모의 운용 프로젝트 상황판</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;900&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ink:#0C1526; --deep:#101D36; --card:#152441; --line:#25365C;
+  --paper:#F2F5FB; --mute:#93A2C0; --dim:#6B7C9E;
+  --amber:#FF9036; --ember:#FF6B5A; --mint:#3FC8A8;
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 12px 32px rgba(0,0,0,.32);
+  --wrap:1080px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--paper);
+  font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;
+  font-size:16px; line-height:1.72; -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 22px}
+h1,h2,h3{font-family:"Gothic A1","Malgun Gothic",sans-serif;text-wrap:balance;margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+/* ── 머리 ── */
+header.top{padding:52px 0 30px;border-bottom:1px solid var(--line);
+  background:radial-gradient(120% 140% at 78% -10%,#1B2C50 0%,var(--ink) 62%)}
+.kicker{font-family:"Gothic A1","Malgun Gothic",sans-serif;font-size:20px;
+  font-weight:800;letter-spacing:.01em;color:var(--amber)}
+h1{font-size:clamp(30px,5.2vw,52px);font-weight:900;letter-spacing:-.02em;
+  line-height:1.14;margin:12px 0 10px}
+h1 em{font-style:normal;color:var(--amber)}
+.lede{color:var(--mute);max-width:60ch;font-size:17px}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.fact{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:9px 14px;font-size:13.5px;color:var(--mute)}
+.fact b{color:var(--paper);font-weight:600}
+
+/* ── 상태 배너 ── */
+.status{margin:26px 0 0;border-radius:14px;border:1px solid var(--line);
+  background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.status .bar{height:3px;background:var(--dim)}
+.status.open .bar{background:var(--mint)}
+.status.soon .bar{background:var(--amber)}
+.status .in{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:18px 22px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--dim);flex:none}
+.status.open .dot{background:var(--mint);box-shadow:0 0 0 5px rgba(63,200,168,.16)}
+.status.soon .dot{background:var(--amber);box-shadow:0 0 0 5px rgba(255,144,54,.16)}
+.st-label{font-family:"Gothic A1",sans-serif;font-weight:700;font-size:19px}
+.st-sub{color:var(--mute);font-size:14px}
+.st-right{margin-left:auto;text-align:right}
+.st-cd{font-family:"IBM Plex Mono",monospace;font-size:26px;font-weight:600;
+  letter-spacing:.02em;color:var(--amber)}
+.status.open .st-cd{color:var(--mint)}
+.st-cdlab{font-size:11.5px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+
+/* ── 목차 ── */
+nav.toc{position:sticky;top:0;z-index:20;background:rgba(12,21,38,.93);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav.toc ul{display:flex;gap:4px;overflow-x:auto;list-style:none;margin:0;
+  padding:9px 22px;max-width:var(--wrap);margin:0 auto;scrollbar-width:thin}
+nav.toc a{white-space:nowrap;color:var(--mute);text-decoration:none;font-size:13.5px;
+  padding:6px 12px;border-radius:8px}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--paper);background:var(--card);outline:none}
+
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.2em;
+  color:var(--amber);text-transform:uppercase;margin-bottom:9px}
+h2{font-size:clamp(23px,3.2vw,31px);font-weight:800;letter-spacing:-.015em;margin-bottom:8px}
+.sub{color:var(--mute);max-width:64ch;margin-bottom:26px}
+h3{font-size:17px;font-weight:700;margin-bottom:5px}
+
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(212px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:20px}
+.card p{margin:0;color:var(--mute);font-size:14.5px;line-height:1.65}
+.card .val{font-family:"IBM Plex Mono",monospace;color:var(--amber);
+  font-size:16px;font-weight:600;margin:2px 0 7px}
+
+/* ── 일정 ── */
+.cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:11px 8px;text-align:center}
+.day .n{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--dim)}
+.day .dt{font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600;margin-top:1px}
+.day .w{font-size:11px;color:var(--mute)}
+.day .m{font-size:10.5px;margin-top:4px;color:var(--amber);font-weight:600}
+.day.mark{border-color:var(--amber)}
+.day.past{opacity:.42}
+.day.today{border-color:var(--mint);background:#14304A}
+.day.today .dt{color:var(--mint)}
+
+/* ── 닉네임 벽 ── */
+.nicks{display:flex;flex-wrap:wrap;gap:7px}
+.nick{background:var(--deep);border:1px solid var(--line);border-radius:99px;
+  padding:6px 14px;font-size:14px;color:var(--paper)}
+.nick:nth-child(7n+3){border-color:#3A4E7E}
+
+/* ── 표 ── */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+thead th{background:var(--deep);color:var(--amber);font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;font-family:"IBM Plex Mono",monospace;font-weight:600}
+tbody tr:last-child td{border-bottom:none}
+td.sec{color:var(--paper);font-weight:600;white-space:nowrap}
+td .tick{display:inline-block;margin:2px 12px 2px 0;white-space:nowrap}
+td .tick b{font-weight:500}
+td .tick i{font-style:normal;font-family:"IBM Plex Mono",monospace;
+  font-size:12px;color:var(--dim);margin-left:5px}
+
+/* ── 배점 ── */
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:20px}
+.sc .n{font-family:"IBM Plex Mono",monospace;font-size:40px;font-weight:600;line-height:1}
+.sc.a .n{color:var(--amber)} .sc.b .n{color:var(--mint)} .sc.c .n{color:var(--ember)}
+.sc h3{margin-top:9px}
+.meter{height:7px;border-radius:99px;background:var(--deep);overflow:hidden;
+  display:flex;margin-top:20px;border:1px solid var(--line)}
+.meter i{display:block;height:100%}
+
+/* ── 링크 버튼 ── */
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:13px}
+a.btn{display:block;background:var(--card);border:1px solid var(--line);border-radius:13px;
+  padding:19px;text-decoration:none;color:var(--paper);transition:border-color .15s,transform .15s}
+a.btn:hover,a.btn:focus-visible{border-color:var(--amber);transform:translateY(-2px);outline:none}
+a.btn .t{font-family:"Gothic A1",sans-serif;font-weight:700;font-size:16.5px}
+a.btn .d{color:var(--mute);font-size:13px;margin-top:3px}
+a.btn .go{color:var(--amber);font-size:16px;font-weight:700;
+  font-family:"Gothic A1","Malgun Gothic",sans-serif;margin-top:11px;letter-spacing:.01em}
+a.btn.off{opacity:.55;pointer-events:none}
+
+/* ── FAQ ── */
+details{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:15px 19px;margin-bottom:9px}
+details[open]{border-color:#33487A}
+summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";color:var(--amber);font-family:"IBM Plex Mono",monospace;
+  margin-right:10px;font-weight:600}
+details[open] summary::before{content:"\2013"}
+details p{margin:11px 0 0;color:var(--mute);font-size:14.5px}
+
+.note{border-left:2px solid var(--amber);padding:3px 0 3px 16px;color:var(--mute);
+  font-size:14.5px;margin-top:22px}
+.note b{color:var(--paper)}
+footer{padding:40px 0 56px;color:var(--dim);font-size:13px}
+footer b{color:var(--mute);font-weight:500}
+
+.sitenav{background:var(--deep);border-bottom:1px solid var(--line);padding:11px 0}
+.sitenav .in{max-width:var(--wrap);margin:0 auto;padding:0 22px;display:flex;
+  gap:10px;align-items:center;flex-wrap:wrap}
+.sitenav a{color:var(--paper);text-decoration:none;font-size:14px;font-weight:600;
+  padding:7px 15px;border-radius:8px;border:1px solid var(--line);background:var(--card)}
+.sitenav a:hover,.sitenav a:focus-visible{border-color:var(--amber);color:var(--amber);outline:none}
+.sitenav a.here{background:var(--amber);color:#0C1526;border-color:var(--amber)}
+.sitenav span{color:var(--dim);font-size:12.5px}
+</style>
+</head>
+<body>
+<nav class="sitenav"><div class="in">
+  <a href="./index.html">순위표 · 상황판</a>
+  <a href="./guide.html" class="here">참여 안내</a>
+  <a href="./me.html">내 계좌</a>
+  <span>영신여자고등학교 인문과학부</span>
+</div></nav>
+<header class="top"><div class="wrap">
+<div class="kicker">영신여자고등학교 · 제1회</div>
+<h1>주식 포트폴리오<br><em>모의 운용 프로젝트</em></h1>
+<p class="lede">1,000만원의 가상자금으로 20거래일 동안 직접 판단하고, 그 판단의 근거를 남기는 활동입니다. 수익률만 겨루는 행사가 아닙니다.</p>
+<div class="facts"><div class="fact">기간 <b>2026.8.27 ~ 9.23</b></div><div class="fact">거래일 <b>20일</b></div><div class="fact">가상자금 <b>1인 1,000만원</b></div><div class="fact">참가 <b>61명</b></div><div class="fact">거래 대상 <b>50종목</b></div></div>
+<div class="status" id="status"><div class="bar"></div><div class="in"><span class="dot"></span><div><div class="st-label" id="stLabel">확인 중</div><div class="st-sub" id="stSub">한국시간 기준으로 계산합니다</div></div><div class="st-right"><div class="st-cd mono" id="stCd">--:--:--</div><div class="st-cdlab" id="stCdLab">남은 시간</div></div></div></div>
+</div></header>
+<nav class="toc"><ul><li><a href="#flow">하루의 흐름</a></li><li><a href="#rules">거래 규칙</a></li><li><a href="#cal">일정</a></li><li><a href="#stocks">거래 종목 50</a></li><li><a href="#score">평가</a></li><li><a href="#people">참가자</a></li><li><a href="#links">제출 · 질문</a></li><li><a href="#parent">학부모님께</a></li><li><a href="#faq">자주 묻는 질문</a></li></ul></nav><main class="wrap">
+<section id="flow"><div class="eyebrow">Daily</div><h2>하루의 흐름</h2><p class="sub">낮에는 아무것도 하지 않아도 됩니다. 시세를 확인할 필요도, 수업 중에 주식 화면을 볼 일도 없습니다.</p><div class="grid g4">
+<div class="card"><h3>낮</h3><div class="val">수업에 집중</div><p>시세 확인이 필요 없습니다. 체결은 종가 한 번뿐입니다.</p></div>
+<div class="card"><h3>밤 20:00</h3><div class="val">접수창 열림</div><p>매매주문 폼이 열립니다. 거래할 날에만 내면 됩니다.</p></div>
+<div class="card"><h3>밤 24:00</h3><div class="val">마감</div><p>접수창이 자동으로 닫힙니다. 이후 제출분은 반영되지 않습니다.</p></div>
+<div class="card"><h3>다음 날 오전</h3><div class="val">순위 갱신</div><p>담당 교사가 전날 주문을 집계해 결과를 게시합니다.</p></div>
+</div>
+<div class="note"><b>주문을 내기 전에 <a href="./me.html" style="color:var(--amber)">내 계좌</a>를 먼저 보세요.</b>
+참가코드를 넣으면 지금 어떤 종목을 몇 주 가지고 있는지, 평균 얼마에 샀는지,
+현금(예수금)이 얼마 남았는지, 지금까지의 체결 내역이 모두 나옵니다.
+<b>가진 현금보다 많이 주문하면 살 수 있는 만큼만 체결되고 나머지는 자동으로 취소</b>되니,
+예수금을 확인하고 수량을 정하는 편이 좋습니다.<br><br>
+다만 <b>오늘 밤에 낸 주문은 내일 아침에 반영</b>됩니다. 체결이 그날 종가로 이루어지기 때문입니다.
+주문 직후에 내 계좌를 열어도 숫자가 그대로인 것은 정상입니다.</div></section>
+<section id="rules"><div class="eyebrow">Rules</div><h2>거래 규칙</h2><p class="sub">여섯 가지만 지키면 됩니다.</p><div class="grid g3">
+<div class="card"><h3>접수 시간</h3><div class="val">거래일 밤 20:00 ~ 24:00</div><p>그 외 시간에는 접수창이 자동으로 닫힙니다.</p></div>
+<div class="card"><h3>체결</h3><div class="val">제출한 날의 종가</div><p>하루 한 번만 체결됩니다. 장중 실시간 매매는 없습니다.</p></div>
+<div class="card"><h3>한 종목 한도</h3><div class="val">최대 400만원</div><p>초기자금의 40%. 넘긴 주문은 한도까지만 체결됩니다.</p></div>
+<div class="card"><h3>비용</h3><div class="val">수수료 0.015% · 거래세 0.18%</div><p>매도할 때는 둘 다 빠집니다. 자주 사고팔수록 손해입니다.</p></div>
+<div class="card"><h3>재제출</h3><div class="val">마감 전이면 몇 번이든</div><p>가장 마지막 제출분만 인정합니다.</p></div>
+<div class="card"><h3>판단 이유</h3><div class="val">두 문장 이상 필수</div><p>매일 쓴 이 기록이 그대로 보고서 재료가 됩니다.</p></div>
+</div><div class="note"><b>거래 대상이 아닌 것</b> — 해외주식, 파생상품, 공매도는 이 프로젝트에서 다루지 않습니다. 아래 50종목 안에서만 주문할 수 있습니다.</div></section>
+<section id="cal"><div class="eyebrow">Calendar</div><h2>20거래일</h2><p class="sub">주말과 공휴일에는 접수창이 열리지 않습니다. 보고서 제출 마감은 폐막 이후 9월 28일(월) 17:00입니다.</p><div class="cal" id="cal">
+<div class="day" data-d="08.27"><div class="n mono">01</div><div class="dt mono">08.27</div><div class="w">목</div></div>
+<div class="day" data-d="08.28"><div class="n mono">02</div><div class="dt mono">08.28</div><div class="w">금</div></div>
+<div class="day" data-d="08.31"><div class="n mono">03</div><div class="dt mono">08.31</div><div class="w">월</div></div>
+<div class="day" data-d="09.01"><div class="n mono">04</div><div class="dt mono">09.01</div><div class="w">화</div></div>
+<div class="day" data-d="09.02"><div class="n mono">05</div><div class="dt mono">09.02</div><div class="w">수</div></div>
+<div class="day" data-d="09.03"><div class="n mono">06</div><div class="dt mono">09.03</div><div class="w">목</div></div>
+<div class="day" data-d="09.04"><div class="n mono">07</div><div class="dt mono">09.04</div><div class="w">금</div></div>
+<div class="day" data-d="09.07"><div class="n mono">08</div><div class="dt mono">09.07</div><div class="w">월</div></div>
+<div class="day" data-d="09.08"><div class="n mono">09</div><div class="dt mono">09.08</div><div class="w">화</div></div>
+<div class="day" data-d="09.09"><div class="n mono">10</div><div class="dt mono">09.09</div><div class="w">수</div></div>
+<div class="day" data-d="09.10"><div class="n mono">11</div><div class="dt mono">09.10</div><div class="w">목</div></div>
+<div class="day" data-d="09.11"><div class="n mono">12</div><div class="dt mono">09.11</div><div class="w">금</div></div>
+<div class="day" data-d="09.14"><div class="n mono">13</div><div class="dt mono">09.14</div><div class="w">월</div></div>
+<div class="day" data-d="09.15"><div class="n mono">14</div><div class="dt mono">09.15</div><div class="w">화</div><div class="m">지필평가</div></div>
+<div class="day" data-d="09.16"><div class="n mono">15</div><div class="dt mono">09.16</div><div class="w">수</div></div>
+<div class="day" data-d="09.17"><div class="n mono">16</div><div class="dt mono">09.17</div><div class="w">목</div></div>
+<div class="day" data-d="09.18"><div class="n mono">17</div><div class="dt mono">09.18</div><div class="w">금</div></div>
+<div class="day" data-d="09.21"><div class="n mono">18</div><div class="dt mono">09.21</div><div class="w">월</div></div>
+<div class="day" data-d="09.22"><div class="n mono">19</div><div class="dt mono">09.22</div><div class="w">화</div></div>
+<div class="day" data-d="09.23"><div class="n mono">20</div><div class="dt mono">09.23</div><div class="w">수</div><div class="m">폐막</div></div>
+</div></section>
+<section id="stocks"><div class="eyebrow">Universe</div><h2>거래 가능 종목 50</h2><p class="sub">10개 업종의 시가총액 상위 5개 종목입니다. 매매주문 폼의 드롭다운과 순서가 동일합니다. 코드는 시세를 찾아볼 때 씁니다. <span class="mono" style="color:var(--dim)">종목코드 기준일 2026.8.24</span></p>
+<div class="tw"><table><thead><tr><th>업종</th><th>종목</th></tr></thead><tbody>
+<tr><td class="sec">반도체</td><td><span class="tick"><b>삼성전자</b><i>005930</i></span><span class="tick"><b>SK하이닉스</b><i>000660</i></span><span class="tick"><b>SK스퀘어</b><i>402340</i></span><span class="tick"><b>한미반도체</b><i>042700</i></span><span class="tick"><b>이수페타시스</b><i>007660</i></span></td></tr>
+<tr><td class="sec">자동차</td><td><span class="tick"><b>현대차</b><i>005380</i></span><span class="tick"><b>기아</b><i>000270</i></span><span class="tick"><b>현대모비스</b><i>012330</i></span><span class="tick"><b>한국타이어앤테크놀로지</b><i>161390</i></span><span class="tick"><b>한온시스템</b><i>018880</i></span></td></tr>
+<tr><td class="sec">은행·금융지주</td><td><span class="tick"><b>KB금융</b><i>105560</i></span><span class="tick"><b>신한지주</b><i>055550</i></span><span class="tick"><b>하나금융지주</b><i>086790</i></span><span class="tick"><b>우리금융지주</b><i>316140</i></span><span class="tick"><b>기업은행</b><i>024110</i></span></td></tr>
+<tr><td class="sec">조선·중공업</td><td><span class="tick"><b>HD현대중공업</b><i>329180</i></span><span class="tick"><b>HD한국조선해양</b><i>009540</i></span><span class="tick"><b>한화오션</b><i>042660</i></span><span class="tick"><b>삼성중공업</b><i>010140</i></span><span class="tick"><b>HD현대</b><i>267250</i></span></td></tr>
+<tr><td class="sec">제약·바이오</td><td><span class="tick"><b>삼성바이오로직스</b><i>207940</i></span><span class="tick"><b>셀트리온</b><i>068270</i></span><span class="tick"><b>SK바이오팜</b><i>326030</i></span><span class="tick"><b>유한양행</b><i>000100</i></span><span class="tick"><b>한미약품</b><i>128940</i></span></td></tr>
+<tr><td class="sec">2차전지·소재</td><td><span class="tick"><b>LG에너지솔루션</b><i>373220</i></span><span class="tick"><b>삼성SDI</b><i>006400</i></span><span class="tick"><b>포스코퓨처엠</b><i>003670</i></span><span class="tick"><b>엘앤에프</b><i>066970</i></span><span class="tick"><b>에코프로머티</b><i>450080</i></span></td></tr>
+<tr><td class="sec">방산·항공우주</td><td><span class="tick"><b>한화에어로스페이스</b><i>012450</i></span><span class="tick"><b>LIG디펜스앤에어로스페이스</b><i>079550</i></span><span class="tick"><b>현대로템</b><i>064350</i></span><span class="tick"><b>한국항공우주</b><i>047810</i></span><span class="tick"><b>한화시스템</b><i>272210</i></span></td></tr>
+<tr><td class="sec">전력·전기장비</td><td><span class="tick"><b>LS ELECTRIC</b><i>010120</i></span><span class="tick"><b>HD현대일렉트릭</b><i>267260</i></span><span class="tick"><b>효성중공업</b><i>298040</i></span><span class="tick"><b>LS</b><i>006260</i></span><span class="tick"><b>대한전선</b><i>001440</i></span></td></tr>
+<tr><td class="sec">증권·보험</td><td><span class="tick"><b>삼성생명</b><i>032830</i></span><span class="tick"><b>삼성화재</b><i>000810</i></span><span class="tick"><b>메리츠금융지주</b><i>138040</i></span><span class="tick"><b>미래에셋증권</b><i>006800</i></span><span class="tick"><b>한국금융지주</b><i>071050</i></span></td></tr>
+<tr><td class="sec">인터넷·IT서비스</td><td><span class="tick"><b>NAVER</b><i>035420</i></span><span class="tick"><b>카카오</b><i>035720</i></span><span class="tick"><b>삼성에스디에스</b><i>018260</i></span><span class="tick"><b>현대오토에버</b><i>307950</i></span><span class="tick"><b>LG씨엔에스</b><i>064400</i></span></td></tr>
+</tbody></table></div></section>
+<section id="score"><div class="eyebrow">Evaluation</div><h2>평가 100점의 구조</h2><p class="sub">총 100점. 수익률만 잘 나와서는 상위권에 들 수 없습니다. 수익률 40점도 절대 수익률이 아니라 순위를 등급으로 환산해 매깁니다.</p><div class="score">
+<div class="sc a"><div class="n mono">40</div><h3>경제지식 지필평가</h3><p>9/15(화) 15:20~16:00 실시(잠정). 객관식 20문항(각 1점) + 단답형 10문항(각 2점). 2차 오리엔테이션에서 다루는 개념 안에서만 출제합니다.</p></div>
+<div class="sc b"><div class="n mono">40</div><h3>투자 수익률</h3><p>순위 등급 환산 — 상위 10%=40점 / 30%=34점 / 50%=28점 / 70%=22점 / 그 외=16점.</p></div>
+<div class="sc c"><div class="n mono">20</div><h3>투자근거 보고서</h3><p>네 문항. 배점이 가장 큰 항목은 '손실 매매 복기'(6점)입니다. 9/28(월)까지 제출합니다.</p></div>
+</div><div class="meter"><i style="width:40%;background:var(--amber)"></i><i style="width:40%;background:var(--mint)"></i><i style="width:20%;background:var(--ember)"></i></div>
+<div class="note"><b>손실을 봐도 상위권에 들 수 있습니다.</b> 보고서에서 배점이 가장 큰 항목이 실패한 매매를 되짚는 문항이기 때문입니다. 매일 주문할 때 쓴 판단 이유가 그대로 보고서 재료가 됩니다.</div>
+<div class="note" style="border-color:var(--ember)"><b>수익률 0점 처리 기준</b> — 행사기간 내 주문 미제출, 무거래, 4일 미만(1~3일) 주문 제출은 수익률 점수를 0점으로 처리합니다. 최소 4일 이상은 주문을 내 주세요.</div>
+<div class="note">보고서는 배점이 20점이지만 생활기록부 기재의 근거가 되는 자료이므로 상세하고 구체적으로 작성하도록 합니다. 본인의 판단 근거를 설명하지 못하면 해당 항목은 0점 처리합니다.</div></section>
+<section id="people"><div class="eyebrow">Participants</div><h2>참가자 61명</h2><p class="sub">순위표를 비롯한 모든 공개 화면에는 닉네임만 표시됩니다. 학번·성명·연락처는 어디에도 게시하지 않습니다.</p><div class="nicks">
+<span class="nick">44</span>
+<span class="nick">99</span>
+<span class="nick">AA</span>
+<span class="nick">Ferrari</span>
+<span class="nick">Kyo</span>
+<span class="nick">eooo</span>
+<span class="nick">noname1</span>
+<span class="nick">가물치</span>
+<span class="nick">고딩개미</span>
+<span class="nick">공룡</span>
+<span class="nick">김고구마</span>
+<span class="nick">까르보불닭볶음면</span>
+<span class="nick">꼬꼬댁</span>
+<span class="nick">꿍실냐옹</span>
+<span class="nick">뉴트리아</span>
+<span class="nick">듀듀갸갸갸갸갸</span>
+<span class="nick">루피</span>
+<span class="nick">맹구짱돌</span>
+<span class="nick">메테르</span>
+<span class="nick">모몽모몬모몽가</span>
+<span class="nick">몬치치</span>
+<span class="nick">베르사유의_공작새</span>
+<span class="nick">베르사유의_장미</span>
+<span class="nick">부지런한_개미</span>
+<span class="nick">불개미</span>
+<span class="nick">불도저양보르기니</span>
+<span class="nick">비둘기_호로록</span>
+<span class="nick">상한가_사냥꾼</span>
+<span class="nick">생떼쓰는_쥐_페리</span>
+<span class="nick">소금장수할머니</span>
+<span class="nick">스카이하나</span>
+<span class="nick">시크릿주주</span>
+<span class="nick">아기귤</span>
+<span class="nick">여왕개미</span>
+<span class="nick">영산이</span>
+<span class="nick">오디세우스</span>
+<span class="nick">왕갈비</span>
+<span class="nick">왕이샹</span>
+<span class="nick">우르르쾅콰악</span>
+<span class="nick">은이헤헤</span>
+<span class="nick">이_구역_최약체</span>
+<span class="nick">이런저런_닉네임</span>
+<span class="nick">재드래곤</span>
+<span class="nick">재벌1세</span>
+<span class="nick">정상현일여</span>
+<span class="nick">주가야_정신차려</span>
+<span class="nick">주린이</span>
+<span class="nick">주식꿈나무</span>
+<span class="nick">지코바치밥</span>
+<span class="nick">짱이</span>
+<span class="nick">코스피의_딸</span>
+<span class="nick">콩알개미</span>
+<span class="nick">쿠쿠</span>
+<span class="nick">크림크루아상</span>
+<span class="nick">토마토껀</span>
+<span class="nick">트럼프</span>
+<span class="nick">티끌모아_파산</span>
+<span class="nick">페토</span>
+<span class="nick">하루아</span>
+<span class="nick">하루히</span>
+<span class="nick">흑임자찰떡</span>
+</div><div class="note"><b>닉네임은 행사 기간 중 변경할 수 없습니다.</b> 순위 집계가 끊기지 않도록 하기 위한 것이니 양해해 주세요.</div></section>
+<section id="links"><div class="eyebrow">Submit</div><h2>제출 · 질문</h2><p class="sub">매매주문은 거래일 밤 20:00~24:00 에만 열립니다. 질문은 언제든 익명으로 낼 수 있습니다.</p><div class="links">
+<a class="btn" href="./me.html"><div class="t">내 계좌</div><div class="d">보유 종목 · 평균단가 · 예수금 · 체결 내역 · 수익률 추이. 참가코드로 본인 것만 열립니다.</div><div class="go mono">주문 전에 확인 &rarr;</div></a>
+<a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdHNRvOphcK2w1EW0nMybl9QIl7AEFLdIN9stn-IuFpuS1o_A/viewform" target="_blank" rel="noopener"><div class="t">매매주문서</div><div class="d">매수·매도 구분과 종목·수량, 그리고 판단 이유를 적습니다.</div><div class="go mono">밤 20:00 ~ 24:00 &rarr;</div></a>
+<a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLScQS20pZdqgE3yUpqjNh24KAMfXKiphg2f1_R0UPWQt0UEd0A/viewform" target="_blank" rel="noopener"><div class="t">질문하기</div><div class="d">익명으로 낼 수 있습니다. 답변은 공지로 함께 알려드립니다.</div><div class="go mono">언제든지 &rarr;</div></a>
+<a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSc-Dd4WCyx5vTFVTuIgRJ-NYgH4IlFDfJFtn7l9YJS4EcmBtA/viewform" target="_blank" rel="noopener"><div class="t">투자근거 보고서</div><div class="d">제출하지 않으면 우수활동 대상에서 제외됩니다. 네 문항 20점.</div><div class="go mono">9/28(월) 17:00 마감 &rarr;</div></a>
+</div></section>
+<section id="parent"><div class="eyebrow">For Parents</div><h2>학부모님께</h2><p class="sub">자녀분이 참여하는 활동이 어떤 것인지 세 가지만 말씀드립니다.</p><div class="grid g3">
+<div class="card"><h3>실제 금전 거래가 없습니다</h3><div class="val">전액 가상자금</div><p>증권계좌나 투자앱을 개설하지 않습니다. 실제 돈이 오가는 일은 일절 없습니다.</p></div>
+<div class="card"><h3>수업시간을 침범하지 않습니다</h3><div class="val">밤 20:00 ~ 24:00</div><p>주문은 정규수업 이후 시간에만 접수합니다. 매일 참여할 의무도 없습니다.</p></div>
+<div class="card"><h3>개인정보를 공개하지 않습니다</h3><div class="val">닉네임만 게시</div><p>순위표와 이 페이지 어디에도 학번·성명·연락처가 표시되지 않습니다.</p></div>
+</div><div class="note">이 활동은 종목을 추천하거나 투자를 권유하지 않습니다. 교사도 특정 종목을 권하지 않으며, 판단과 그 근거는 전적으로 학생 몫입니다. 학부모님께서도 자녀가 경제 흐름에 대해 직접 탐구·분석하면서 실제 학습 효과를 얻을 수 있도록, 종목 추천 등의 직접적인 개입보다는 학생이 스스로 탐구할 수 있도록 지켜봐 주시면 감사하겠습니다. 활동 결과는 창의적 체험활동 영역에 참여 사실과 관찰된 태도·역량으로 기재됩니다.</div></section>
+<section id="faq"><div class="eyebrow">FAQ</div><h2>자주 묻는 질문</h2><p class="sub">여기에 없는 질문은 위의 질문 폼으로 보내 주세요.</p>
+<details><summary>매일 주문해야 하나요?</summary><p>아니요. 거래하고 싶은 날에만 내면 됩니다. 쉬는 날이 있어도 불이익은 없습니다.</p></details>
+<details><summary>실제로 돈이 드나요?</summary><p>한 푼도 들지 않습니다. 전액 가상자금이고, 증권계좌나 투자앱을 만들 일도 없습니다.</p></details>
+<details><summary>낮에 시세를 봐야 하나요?</summary><p>볼 필요 없습니다. 모든 주문은 그날 종가로 한 번에 체결되므로 수업 중에 시세를 확인할 이유가 없습니다.</p></details>
+<details><summary>주문을 잘못 냈어요.</summary><p>그날 밤 24:00 전이면 다시 내면 됩니다. 가장 마지막에 낸 것만 인정합니다.</p></details>
+<details><summary>내가 지금 뭘 얼마나 갖고 있는지 어디서 보나요?</summary><p>위쪽 <b>내 계좌</b>에서 참가코드(MJ000 형식)를 넣으면 보유 종목·보유수량·평균단가·예수금·체결 내역·수익률 추이가 모두 나옵니다. 순위표와 같은 자료로 매일 아침 함께 갱신됩니다.</p></details>
+<details><summary>주문했는데 내 계좌에 안 나와요.</summary><p>정상입니다. 체결은 그날 <b>종가</b>로 이루어지므로, <b>오늘 밤에 낸 주문은 내일 아침에 반영</b>됩니다. 내 계좌 화면 위쪽에 '몇 월 며칠 종가 기준'인지 적혀 있으니 확인해 보세요.</p></details>
+<details><summary>돈이 모자란데 주문하면 어떻게 되나요?</summary><p>주문이 거부되지는 않고, 가진 현금으로 살 수 있는 만큼만 체결된 뒤 나머지는 자동으로 취소됩니다. 생각한 만큼 못 사게 되므로 <b>내 계좌</b>에서 예수금을 먼저 확인하고 수량을 정하는 편이 좋습니다.</p></details>
+<details><summary>다른 사람 계좌도 볼 수 있나요?</summary><p>본인 코드로 본인 계좌만 여는 것이 원칙입니다. 남의 종목 구성을 따라 사는 것은 이 활동이 평가하는 <b>본인 판단</b>과 어긋나고, 보고서에서 판단 근거를 설명하지 못하면 그 항목은 0점 처리됩니다.</p></details>
+<details><summary>수익률이 마이너스면 우수활동 대상에서 제외되나요?</summary><p>포함될 수 있습니다. 수익률은 100점 중 40점이고 그마저 순위 등급으로 환산합니다. 지필평가와 보고서가 60점이므로, 손실이 나도 그 과정을 잘 분석한 학생이 상위권에 오를 수 있습니다.</p></details>
+<details><summary>400만원 넘게 주문하면 어떻게 되나요?</summary><p>주문이 거부되지는 않고 한도인 400만원어치까지만 체결됩니다. 나머지는 자동으로 취소됩니다.</p></details>
+<details><summary>AI를 써도 되나요?</summary><p>됩니다. 보고서에 참고자료로 적어도 감점하지 않습니다. 다만 제출 후 교사가 구두로 확인 질문을 할 수 있습니다.</p></details>
+<details><summary>닉네임을 바꾸고 싶어요.</summary><p>행사 기간 중에는 변경할 수 없습니다. 순위 집계가 끊기지 않도록 하기 위한 것입니다.</p></details>
+</section>
+<footer><b>제1회 주식 포트폴리오 모의 운용 프로젝트</b> · 영신여자고등학교 인문과학부<br>이 페이지에는 학번·성명·연락처가 게시되지 않습니다. 문의: 인문과학부 · 활동 관련 질문은 위의 질문 폼을 이용해 주세요.</footer>
+</main>
+<script>
+(function(){
+  var DAYS = ["08.27", "08.28", "08.31", "09.01", "09.02", "09.03", "09.04", "09.07", "09.08", "09.09", "09.10", "09.11", "09.14", "09.15", "09.16", "09.17", "09.18", "09.21", "09.22", "09.23"];
+  // 한국시간(UTC+9)으로 환산 — 보는 사람의 기기 시간대와 무관하게 같은 결과
+  function kst(){ var n=new Date(); return new Date(n.getTime()+(n.getTimezoneOffset()*60000)+32400000); }
+  function two(n){ return (n<10?'0':'')+n; }
+  function hhmmss(ms){
+    var s=Math.max(0,Math.floor(ms/1000));
+    return two(Math.floor(s/3600))+':'+two(Math.floor(s%3600/60))+':'+two(s%60);
+  }
+  var box=document.getElementById('status'), lab=document.getElementById('stLabel'),
+      sub=document.getElementById('stSub'), cd=document.getElementById('stCd'),
+      cdl=document.getElementById('stCdLab');
+
+  function tick(){
+    var t=kst(), md=two(t.getMonth()+1)+'.'+two(t.getDate()), h=t.getHours();
+    var isTradingDay = DAYS.indexOf(md)>=0;
+    box.classList.remove('open','soon');
+
+    if(isTradingDay && h>=20){
+      var end=new Date(t); end.setHours(24,0,0,0);
+      box.classList.add('open');
+      lab.textContent='접수창이 열려 있습니다';
+      sub.textContent='오늘 밤 24:00 까지 제출할 수 있습니다. 다시 내면 마지막 것만 인정합니다.';
+      cd.textContent=hhmmss(end-t); cdl.textContent='마감까지';
+    } else if(isTradingDay){
+      var op=new Date(t); op.setHours(20,0,0,0);
+      box.classList.add('soon');
+      lab.textContent='오늘은 거래일입니다';
+      sub.textContent='밤 20:00 에 접수창이 열립니다. 낮에는 시세를 확인할 필요가 없습니다.';
+      cd.textContent=hhmmss(op-t); cdl.textContent='개시까지';
+    } else {
+      lab.textContent='오늘은 접수하지 않습니다';
+      var future=DAYS.filter(function(d){ return d>md; });
+      sub.textContent = future.length
+        ? '다음 거래일은 '+future[0]+' 입니다.'
+        : '활동이 모두 끝났습니다. 보고서 마감은 9월 28일(월) 17:00 입니다.';
+      cd.textContent='--:--:--'; cdl.textContent='대기';
+    }
+
+    // 달력 오늘/지난날 표시
+    var cells=document.querySelectorAll('#cal .day');
+    for(var i=0;i<cells.length;i++){
+      var d=cells[i].getAttribute('data-d');
+      cells[i].classList.toggle('today', d===md);
+      cells[i].classList.toggle('past', d<md);
+      if(cells[i].querySelector('.m')) cells[i].classList.add('mark');
+    }
+  }
+  tick(); setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
