@@ -1449,7 +1449,10 @@ const DEFAULT_FAQ=[
  ['기타','실제로 주식을 사도 되나요?','미성년자는 보호자 동의 없이 계좌를 만들 수 없고, 이 활동은 실거래를 전제로 하지 않습니다. 이번 활동은 가상 자금으로만 진행합니다.']
 ];
 function renderFaq(){
-  const list = STATE.faq.length? STATE.faq : DEFAULT_FAQ.map(([cat,q,a])=>({cat,q,a}));
+  // 시트에서 받은 실제 답변을 앞에, 내장 기본 문답을 뒤에 — 둘 다 보여 준다.
+  // (시트를 연결했다고 해서 기본 문답이 사라지면 안 되기 때문)
+  const base = DEFAULT_FAQ.map(([cat,q,a])=>({cat,q,a}));
+  const list = STATE.faq.length ? STATE.faq.concat(base) : base;
   const cats=[...new Set(list.map(f=>f.cat))];
   const sel=$('#faqCat');
   if(sel.options.length<=1) sel.innerHTML='<option value="all">전체 분류</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');
