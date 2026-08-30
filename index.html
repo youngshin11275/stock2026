@@ -1455,7 +1455,10 @@ function renderFaq(){
   const list = STATE.faq.length ? STATE.faq.concat(base) : base;
   const cats=[...new Set(list.map(f=>f.cat))];
   const sel=$('#faqCat');
-  if(sel.options.length<=1) sel.innerHTML='<option value="all">전체 분류</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  // 시트에서 새 분류가 들어올 수 있으므로 매번 다시 채우되, 고른 값은 유지한다
+  const keep = sel.value;
+  sel.innerHTML='<option value="all">전체 분류</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  if([...sel.options].some(o=>o.value===keep)) sel.value=keep;
   const q=$('#faqSearch').value.trim(), cat=sel.value;
   const view=list.filter(f=>(cat==='all'||f.cat===cat)&&(!q||f.q.includes(q)||f.a.includes(q)));
   $('#faqCount').textContent=`${view.length}건`;
@@ -1548,6 +1551,10 @@ async function loadAll(){
   $('#miniCount').textContent = (CONFIG.participants || STATE.rank.length)+'명';
 
   renderRank(); drawBar(); drawLine(); drawHist();
+  // 시트에서 받아온 내용으로 다시 그린다.
+  // (이 셋은 첫 화면을 그릴 때 한 번 실행되는데, 그때는 아직 시트를 못 읽은 상태라
+  //  여기서 한 번 더 그려 주지 않으면 공지·Q&A·자료실이 기본값에 머문다)
+  renderNotice(); renderFaq(); renderLinks();
 }
 
 function initTabs(){
