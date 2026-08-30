@@ -215,6 +215,23 @@ details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-sp
   #calWrap > div + div{border-top:1px solid var(--axis);padding-top:16px}
 }
 
+/* ---------- 반영 시점 3단계 도식 ---------- */
+.flow{display:grid;gap:10px;margin:16px 0}
+@media(min-width:860px){.flow{grid-template-columns:1fr 28px 1fr 28px 1fr;align-items:stretch}}
+.fstep{border:1px solid var(--border);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+.fstep .fnum{width:25px;height:25px;border-radius:50%;background:var(--s1);color:#fff;
+  font-size:13px;font-weight:700;display:grid;place-items:center;margin-bottom:9px}
+.fstep .fwhen{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.01em}
+.fstep .ftitle{font-size:15.5px;font-weight:800;margin:3px 0 7px;color:var(--ink);letter-spacing:-.01em}
+.fstep .fdesc{font-size:13px;color:var(--ink-2);line-height:1.62}
+.fstep.mid .fnum{background:var(--s4)}
+.fstep.last{border-color:var(--up)}
+.fstep.last .fnum{background:var(--up)}
+.farrow{display:grid;place-items:center;color:var(--axis);font-size:19px;font-weight:700}
+@media(max-width:859px){.farrow{transform:rotate(90deg);height:14px}}
+td.day{font-weight:700;color:var(--ink);white-space:nowrap}
+td.hit{font-weight:800;color:var(--up);white-space:nowrap}
+
 .terms{display:grid;gap:10px}
 @media(min-width:700px){.terms{grid-template-columns:1fr 1fr}}
 .term{border:1px solid var(--border);border-radius:10px;padding:11px 13px;background:var(--surface-2)}
@@ -394,6 +411,60 @@ const CONFIG = {
   </div>
 
   <div class="card">
+    <h2>내 수익률은 언제 반영되나요?</h2>
+    <p class="sub">가장 많이 들어온 질문입니다. 결론부터 말하면 <b>실시간이 아니라 이틀 뒤</b>에 반영됩니다.</p>
+
+    <div class="flow">
+      <div class="fstep">
+        <div class="fnum">1</div>
+        <div class="fwhen">주문한 날 밤 20:00~24:00</div>
+        <div class="ftitle">주문 = 그날 종가로 매수</div>
+        <div class="fdesc">그날 <b>오후 3시 30분에 확정된 종가</b>로 삽니다.
+          이미 정해진 가격이라 이 시점에는 손익이 생길 수 없습니다.</div>
+      </div>
+      <div class="farrow">&rarr;</div>
+      <div class="fstep mid">
+        <div class="fnum">2</div>
+        <div class="fwhen">다음 거래일 아침</div>
+        <div class="ftitle">체결 확인 (손익은 아직)</div>
+        <div class="fdesc"><b>내 계좌</b>에 산 종목과 남은 예수금이 나타납니다.
+          수익률은 수수료만큼인 <b>-0.01%</b> 정도로 보이는데, 잘못된 것이 아닙니다.</div>
+      </div>
+      <div class="farrow">&rarr;</div>
+      <div class="fstep last">
+        <div class="fnum">3</div>
+        <div class="fwhen">그다음 거래일 아침</div>
+        <div class="ftitle">첫 손익 · 순위 반영</div>
+        <div class="fdesc">다음 거래일 종가와 비교해 <b>진짜 손익</b>이 나옵니다.
+          순위가 갈리는 것도 이때부터입니다.</div>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>주문한 밤</th><th>② 체결 확인</th><th>③ 손익 · 순위 반영</th></tr></thead>
+        <tbody>
+          <tr><td class="day">월요일 밤</td><td>화요일 아침</td><td class="hit">수요일 아침</td></tr>
+          <tr><td class="day">화요일 밤</td><td>수요일 아침</td><td class="hit">목요일 아침</td></tr>
+          <tr><td class="day">수요일 밤</td><td>목요일 아침</td><td class="hit">금요일 아침</td></tr>
+          <tr><td class="day">목요일 밤</td><td>금요일 아침</td><td class="hit">토요일 아침</td></tr>
+          <tr><td class="day">금요일 밤</td><td>토요일 아침</td><td class="hit">화요일 아침</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="srcnote">금요일 밤 주문은 주말에 장이 열리지 않아 <b>화요일 아침</b>에야 손익이 나옵니다.
+      공휴일이 끼면 그만큼 밀립니다.</div>
+
+    <div class="callout warnc">
+      <strong>왜 실시간이 아닌가요?</strong>
+      이 활동은 장중 실시간 매매를 하지 않습니다. 하루 한 번 <b>종가로만</b> 체결하고,
+      담당 교사가 다음 날 아침에 종가를 넣어 집계합니다.
+      수업 중에 시세를 볼 필요가 없도록 <b>일부러 이렇게 설계</b>했습니다.
+      낮에 순위가 안 바뀌는 것은 정상입니다.
+    </div>
+  </div>
+
+  <div class="card">
     <h2>누적 수익률순</h2>
     <p class="sub" id="barAsOf">집계 기준일 —</p>
     <div class="chartbox">
@@ -420,6 +491,12 @@ const CONFIG = {
   <div class="card">
     <h2>전체 순위</h2>
     <p class="sub" id="rankAsOf">집계 기준일 —</p>
+    <div class="callout warnc">
+      <strong>순위는 실시간이 아닙니다.</strong>
+      위 <b>집계 기준일</b>의 종가로 계산한 결과이며, 낮에는 바뀌지 않습니다.
+      어젯밤에 낸 주문은 아직 반영되지 않았을 수 있습니다 —
+      자세한 시점은 <b>홈</b> 탭의 「내 수익률은 언제 반영되나요?」를 보세요.
+    </div>
     <div class="toolrow">
       <input type="search" id="rankSearch" placeholder="내 닉네임 검색" aria-label="닉네임 검색" style="min-width:180px">
       <select id="rankSort" aria-label="정렬 기준">
