@@ -113,9 +113,11 @@ main{padding:22px 0 64px}
 }
 .hero .label{font-size:13px;color:var(--muted);margin-bottom:2px}
 .hero .figure{
-  font-size:clamp(40px,9vw,60px);font-weight:700;letter-spacing:-.03em;line-height:1.05;
-  font-variant-numeric:tabular-nums; color:var(--timer);
+  font-size:clamp(32px,7.2vw,48px);font-weight:700;letter-spacing:-.03em;line-height:1.05;
+  font-variant-numeric:tabular-nums; color:var(--ink);
 }
+/* 접수 중(마감 카운트다운)일 때만 색을 준다 — 놓치면 안 되는 정보이기 때문 */
+.hero .figure.live{color:var(--timer)}
 .hero .note{font-size:13px;color:var(--ink-2);margin-top:6px}
 .hero-grid{display:grid;gap:18px}
 @media(min-width:760px){.hero-grid{grid-template-columns:1.4fr 1fr;align-items:center}}
@@ -873,7 +875,7 @@ function tickTimer(){
   const today = dstr(now);
   const isTradeDay = TDAYS.includes(today);
 
-  let label='', fig='', note='';
+  let label='', fig='', note='', urgent=false;   // urgent = 접수 중(마감 카운트다운)
 
   if(ph==='before'){
     badge.textContent='개막 전'; badge.className='badge soon';
@@ -907,10 +909,12 @@ function tickTimer(){
         label='오늘 주문 마감까지';
         fig = hms(close-now);
         note = '지금 주문 접수 중 · 마감 후 제출분은 반영되지 않습니다';
+        urgent = true;
       }
     }
   }
   $('#timerLabel').textContent=label;
+  $('#timerFigure').classList.toggle('live', urgent);
   $('#timerFigure').textContent=fig;
   $('#timerNote').textContent=note;
 
