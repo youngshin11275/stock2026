@@ -1892,9 +1892,10 @@ async function loadAll(){
   STATE.isDemo = !live;
   const badge=$('#dataBadge');
   badge.textContent = live ? '실시간 집계' : '샘플 데이터';
+  // 색까지 바꿔야 눈에 띈다 — 초록이면 실제 자료, 노랑이면 예시 화면
+  badge.className = 'badge ' + (live ? 'live' : 'soon');
   badge.title = live ? '구글시트에서 불러온 실제 집계 결과입니다'
                      : '구글시트 주소를 넣기 전까지 보이는 예시 화면입니다';
-  badge.style.opacity = live? 1 : .7;
 
   const last=[...new Set(STATE.daily.map(r=>r.date))].sort().pop();
   const asOf = last? last.replace(/-/g,'.') : '—';
