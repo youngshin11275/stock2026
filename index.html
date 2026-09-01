@@ -77,6 +77,7 @@ header.site{
 .badge.live{color:#fff;background:var(--good);border-color:transparent}
 .badge.soon{color:#0b0b0b;background:var(--warn);border-color:transparent}
 .badge.done{color:var(--ink-2)}
+.badge.err{color:#fff;background:var(--crit);border-color:transparent}
 .iconbtn{
   border:1px solid var(--border);background:var(--surface);color:var(--ink-2);
   border-radius:10px;padding:6px 10px;font-size:13px;cursor:pointer;font-family:inherit;
@@ -175,6 +176,10 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--s1);outlin
   display:inline-block;
 }
 .btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--border)}
+/* 탐구 안내서 — 클릭할 곳임이 분명히 보이도록 크고 눈에 띄게 */
+.btn.guide{background:var(--surface);color:var(--brand);border-color:var(--brand);
+  font-size:15.5px;font-weight:800;padding:9px 16px}
+.btn.guide:hover{background:var(--brand);color:#fff;filter:none}
 .btn:hover{filter:brightness(1.06)}
 
 /* ---------- 기타 ---------- */
@@ -602,7 +607,7 @@ const CONFIG = {
         <option value="price">주가 높은순</option>
         <option value="priceAsc">주가 낮은순</option>
       </select>
-      <a class="btn ghost" href="https://drive.google.com/drive/folders/1eXq_d7xdf1-fP3WK7rOohi0jU-6q2mhJ?usp=drive_link" target="_blank" rel="noopener">📕 탐구 안내서</a>
+      <a class="btn guide" href="https://drive.google.com/drive/folders/1eXq_d7xdf1-fP3WK7rOohi0jU-6q2mhJ?usp=drive_link" target="_blank" rel="noopener">📕 탐구 안내서 &larr;(클릭)</a>
       <span class="sub" id="pxCount"></span>
     </div>
     <div id="pxBoard"></div>
@@ -689,7 +694,7 @@ const CONFIG = {
     <p class="sub">10개 업종의 시가총액 상위 5개 종목입니다. 매매주문 폼의 드롭다운과 순서가 동일합니다</p>
     <div class="toolrow">
       <input type="search" id="univSearch" placeholder="종목 검색 (예: 삼성)" aria-label="종목 검색" style="min-width:200px">
-      <a class="btn ghost" href="https://drive.google.com/drive/folders/1eXq_d7xdf1-fP3WK7rOohi0jU-6q2mhJ?usp=drive_link" target="_blank" rel="noopener">📕 거래종목 탐구 안내서</a>
+      <a class="btn guide" href="https://drive.google.com/drive/folders/1eXq_d7xdf1-fP3WK7rOohi0jU-6q2mhJ?usp=drive_link" target="_blank" rel="noopener">📕 거래종목 탐구 안내서 &larr;(클릭)</a>
       <span class="sub" id="univCount"></span>
     </div>
     <div class="callout">
@@ -888,13 +893,20 @@ function parseCSV(text){
     const o={}; head.forEach((h,i)=> o[h]=(r[i]??'').trim()); return o;
   });
 }
-async function loadSheet(url){
+/** 구글이 가끔 500/400 을 돌려주므로 몇 번 다시 시도한다 */
+async function loadSheet(url, tries){
   if(!url) return null;
-  try{
-    const res = await fetch(url,{cache:'no-store'});
-    if(!res.ok) throw new Error(res.status);
-    return parseCSV(await res.text());
-  }catch(e){ console.warn('시트 불러오기 실패:',url,e); return null; }
+  tries = tries || 3;
+  for(let i=0;i<tries;i++){
+    try{
+      const res = await fetch(url,{cache:'no-store'});
+      if(!res.ok) throw new Error(res.status);
+      return parseCSV(await res.text());
+    }catch(e){
+      if(i === tries-1){ console.warn('시트 불러오기 최종 실패:',url,e); return null; }
+      await new Promise(r=>setTimeout(r, 600*(i+1)));   // 0.6초 → 1.2초 뒤 재시도
+    }
+  }
 }
 /** 한글/영문 헤더 모두 허용 */
 function pick(o, ...keys){
@@ -960,7 +972,7 @@ function elapsedTradingDays(){
 /* ============================================================
    3. 상태
    ============================================================ */
-const STATE = { rank:[], daily:[], notice:[], faq:[], links:[], price:null, isDemo:true, me:'' };
+const STATE = { rank:[], daily:[], notice:[], faq:[], links:[], price:null, isDemo:true, loadError:false, me:'' };
 
 /* ============================================================
    4. 타이머 · 진행 단계
@@ -1344,8 +1356,12 @@ function renderRank(){
       <td class="num ${cls(r.day)}">${fmtPct(r.day)}</td>
       <td class="num">${r.value?fmtWon(r.value):'—'}</td>
       <td class="num">${r.trades??'—'}</td>
-    </tr>`).join('') || `<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:26px">
-      일치하는 닉네임이 없습니다.</td></tr>`;
+    </tr>`).join('') || (STATE.loadError
+      ? `<tr><td colspan="6" style="color:var(--crit);text-align:center;padding:26px">
+         자료를 불러오지 못했습니다. 잠시 후 <b>Ctrl+F5</b> 로 새로고침해 주세요.<br>
+         <span style="color:var(--muted);font-size:12.5px">구글 서버가 일시적으로 응답하지 않을 때 생깁니다. 순위가 사라진 것이 아닙니다.</span></td></tr>`
+      : `<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:26px">
+         일치하는 닉네임이 없습니다.</td></tr>`);
 
   STATE.me = q && rows.some(r=>r.nickname.includes(q)) ? (view[0]?.nickname||'') : '';
   drawLine();
@@ -1893,18 +1909,29 @@ async function loadAll(){
     desc:pick(o,'설명','desc','description')
   })).filter(l=>l.title&&l.url);
 
-  if(!STATE.rank.length || !STATE.daily.length){
+  // 시트 주소를 넣어 두었는데도 못 받아왔다면 '일시적 오류'다.
+  // 이때 데모 데이터를 띄우면 학생이 가짜 순위를 진짜로 믿게 되므로 절대 그러지 않는다.
+  const 연결설정됨 = !!(CONFIG.sheets.rank || CONFIG.sheets.daily);
+  STATE.loadError = 연결설정됨 && !live;
+
+  if(!STATE.loadError && (!STATE.rank.length || !STATE.daily.length)){
     const d=demoData();
     if(!STATE.rank.length) STATE.rank=d.rank;
     if(!STATE.daily.length) STATE.daily=d.daily;
   }
   STATE.isDemo = !live;
   const badge=$('#dataBadge');
-  badge.textContent = live ? '실시간 집계' : '샘플 데이터';
-  // 색까지 바꿔야 눈에 띈다 — 초록이면 실제 자료, 노랑이면 예시 화면
-  badge.className = 'badge ' + (live ? 'live' : 'soon');
-  badge.title = live ? '구글시트에서 불러온 실제 집계 결과입니다'
-                     : '구글시트 주소를 넣기 전까지 보이는 예시 화면입니다';
+  if(STATE.loadError){
+    badge.textContent='불러오기 실패';
+    badge.className='badge err';
+    badge.title='구글시트에서 자료를 받지 못했습니다. 잠시 후 새로고침해 주세요.';
+  }else{
+    badge.textContent = live ? '실시간 집계' : '샘플 데이터';
+    // 색까지 바꿔야 눈에 띈다 — 초록이면 실제 자료, 노랑이면 예시 화면
+    badge.className = 'badge ' + (live ? 'live' : 'soon');
+    badge.title = live ? '구글시트에서 불러온 실제 집계 결과입니다'
+                       : '구글시트 주소를 넣기 전까지 보이는 예시 화면입니다';
+  }
 
   const last=[...new Set(STATE.daily.map(r=>r.date))].sort().pop();
   const asOf = last? last.replace(/-/g,'.') : '—';
