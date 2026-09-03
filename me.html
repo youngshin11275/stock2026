@@ -276,7 +276,7 @@ const CONFIG = {
 
     <div class="card">
       <h2>체결 내역</h2>
-      <p class="sub">실제로 체결된 주문만 나옵니다. 무효·미체결된 주문은 여기에 없습니다.</p>
+      <p class="sub">낸 주문이 모두 나옵니다. <b>체결되지 않은 주문은 흐리게</b> 표시되고, 맨 오른쪽 비고에 왜 안 됐는지 적혀 있습니다. (선생님이 무효 처리한 주문은 여기에 없습니다.)</p>
       <div class="tablewrap">
         <table id="fillTable">
           <thead><tr>
@@ -574,15 +574,19 @@ function renderFills(rows){
     const buy  = side.indexOf('매수')>=0;
     const st   = num(pick(r,'정산금액','net'));
     const fee  = num(pick(r,'수수료','fee')) + num(pick(r,'거래세','tax'));
-    return '<tr>'+
+    const got  = num(pick(r,'체결수량','qty'));
+    // 체결되지 않은 주문 — 흐리게 보여 주고, 돈이 오간 칸은 '—' 로 비웁니다.
+    // 체결단가는 그날 종가이므로 그대로 둡니다 ("이 값이면 살 수 있었다"는 정보).
+    const miss = !(got > 0);
+    return '<tr'+(miss?' style="opacity:.55"':'')+'>'+
       '<td>'+esc(dot(pick(r,'거래일','date')))+'</td>'+
       '<td><span class="tagb '+(buy?'buy':'sell')+'">'+esc(side)+'</span></td>'+
       '<td><b>'+esc(pick(r,'종목','name'))+'</b></td>'+
       '<td class="num">'+won(num(pick(r,'신청수량','ask')))+'</td>'+
-      '<td class="num">'+won(num(pick(r,'체결수량','qty')))+'</td>'+
+      '<td class="num">'+(miss?'0':won(got))+'</td>'+
       '<td class="num">'+won(num(pick(r,'체결단가','px')))+'</td>'+
-      '<td class="num">'+won(fee)+'</td>'+
-      '<td class="num '+cls(st)+'">'+(st>0?'+':'')+won(st)+'</td>'+
+      '<td class="num">'+(miss?'—':won(fee))+'</td>'+
+      '<td class="num '+(miss?'':cls(st))+'">'+(miss?'—':((st>0?'+':'')+won(st)))+'</td>'+
       '<td class="sub">'+esc(pick(r,'비고','note'))+'</td>'+
     '</tr>';
   }).join('');
