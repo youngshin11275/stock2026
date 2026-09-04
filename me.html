@@ -584,7 +584,7 @@ function renderFills(rows){
       '<td><b>'+esc(pick(r,'종목','name'))+'</b></td>'+
       '<td class="num">'+won(num(pick(r,'신청수량','ask')))+'</td>'+
       '<td class="num">'+(miss?'0':won(got))+'</td>'+
-      '<td class="num">'+won(num(pick(r,'체결단가','px')))+'</td>'+
+      '<td class="num">'+(num(pick(r,'체결단가','px'))>0?won(num(pick(r,'체결단가','px'))):'—')+'</td>'+
       '<td class="num">'+(miss?'—':won(fee))+'</td>'+
       '<td class="num '+(miss?'':cls(st))+'">'+(miss?'—':((st>0?'+':'')+won(st)))+'</td>'+
       '<td class="sub">'+esc(pick(r,'비고','note'))+'</td>'+
