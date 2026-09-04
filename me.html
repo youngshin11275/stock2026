@@ -256,6 +256,22 @@ const CONFIG = {
           <span class="badge" id="orderBadge">—</span>
         </div>
         <p class="sub" id="orderWhen" style="margin:6px 0 12px">접수 시간을 확인하는 중…</p>
+        <div class="callout" id="copyBox" style="margin:0 0 12px">
+          <strong>주문서에 이렇게 적으세요</strong>
+          <div id="copyCodeRow" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:9px">
+            <span class="sub" style="min-width:56px">참가코드</span>
+            <b id="copyCodeVal" style="user-select:all;-webkit-user-select:all;font-size:15.5px;
+               letter-spacing:.03em;background:var(--surface-2);padding:3px 9px;border-radius:7px">—</b>
+            <button class="iconbtn" id="copyCode">⧉ 복사</button>
+          </div>
+          <div id="copyNickRow" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:7px">
+            <span class="sub" style="min-width:56px">닉네임</span>
+            <b id="copyNickVal" style="user-select:all;-webkit-user-select:all;font-size:15.5px;
+               background:var(--surface-2);padding:3px 9px;border-radius:7px">—</b>
+            <button class="iconbtn" id="copyNick">⧉ 복사</button>
+          </div>
+          <div class="sub" id="copyMsg" style="margin-top:8px"></div>
+        </div>
         <a class="btn" id="orderBtn" href="#" target="_blank" rel="noopener"
            style="display:block;width:100%;box-sizing:border-box;text-align:center;
                   padding:14px;font-size:15.5px;text-decoration:none">📝 매매주문서 열기</a>
@@ -539,6 +555,7 @@ function render(code, d){
     zw.style.display='none';
   }
 
+  renderCopyBox(code, pick(s,'닉네임','nickname'));
   renderOrderBox(cash);
   renderHolding(d.holding);
   renderFills(d.fills);
@@ -547,6 +564,56 @@ function render(code, d){
   $('#gateView').classList.add('hidden');
   $('#acctView').classList.remove('hidden');
   window.scrollTo(0,0);
+}
+
+/* ---------- 주문서에 적을 값 · 복사 단추 ----------
+   참가코드를 잘못 적으면 남의 계좌로 주문이 들어가고,
+   닉네임을 잘못 적으면 대조에 걸립니다.
+   그래서 명단에 등록된 값을 그대로 복사해 갈 수 있게 해 둡니다. */
+const COPY_HELP = '명단에 등록된 그대로입니다. [복사]를 누르거나, 값을 한 번 눌러 선택한 뒤 주문서에 붙여 넣으세요.';
+
+function renderCopyBox(code, nick){
+  const box = $('#copyBox'); if(!box) return;
+  $('#copyCodeVal').textContent = code || '—';
+  $('#copyMsg').textContent = COPY_HELP;
+
+  const row = $('#copyNickRow');
+  if(nick){
+    row.style.display = '';
+    $('#copyNickVal').textContent = nick;
+    $('#copyNick').onclick = () => 복사하기(nick, '닉네임을');
+  }else{
+    // [계좌요약] 에 닉네임 열이 아직 없을 때 — 그 줄만 감추고 코드만 씁니다.
+    row.style.display = 'none';
+  }
+  $('#copyCode').onclick = () => 복사하기(code, '참가코드를');
+}
+
+function 복사하기(text, 무엇){
+  const box = $('#copyMsg');
+  const 알림 = ok => {
+    box.textContent = ok ? `${무엇} 복사했습니다. 주문서에 붙여 넣으세요.`
+                         : '복사가 안 됩니다. 위 값을 한 번 누르면 전체가 선택됩니다 — 그대로 복사해 주세요.';
+    setTimeout(() => { box.textContent = COPY_HELP; }, 3000);
+  };
+  // 옛 방식 — 최신 클립보드가 막혔을 때 쓰는 대비책
+  const 대비책 = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);   // 모바일 대응
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+    return ok;
+  };
+  // 최신 방식이 실패하면(권한 거부·앱 안의 브라우저 등) 곧바로 대비책으로 넘어갑니다.
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(() => 알림(true), () => 알림(대비책()));
+    return;
+  }
+  알림(대비책());
 }
 
 /* ---------- 매매주문 접수창 ---------- */
