@@ -250,7 +250,24 @@ const CONFIG = {
       <div class="callout" id="zeroWarn" style="display:none"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="orderCard">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <h2 style="margin:0">매매주문 제출하기</h2>
+          <span class="badge" id="orderBadge">—</span>
+        </div>
+        <p class="sub" id="orderWhen" style="margin:6px 0 12px">접수 시간을 확인하는 중…</p>
+        <a class="btn" id="orderBtn" href="#" target="_blank" rel="noopener"
+           style="display:block;width:100%;box-sizing:border-box;text-align:center;
+                  padding:14px;font-size:15.5px;text-decoration:none">📝 매매주문서 열기</a>
+        <div class="callout" style="margin-top:14px">
+          <strong>지금 주문에 쓸 수 있는 현금은 <span id="orderCash">—</span> 입니다.</strong>
+          한 종목에는 <b>400만원</b>(초기자금의 40%)까지만 매수할 수 있습니다.
+          주문서에는 <b>참가코드</b>와 <b>닉네임</b>을 정확히 적어 주세요.
+          같은 날 여러 번 내면 <b>마지막에 낸 것만</b> 인정됩니다.
+        </div>
+      </div>
+
+      <div class="card">
       <h2>보유 종목</h2>
       <p class="sub" id="holdSub">지금 가지고 있는 종목입니다. 평균단가에는 매수 수수료가 포함돼 있습니다.</p>
       <div class="tablewrap">
@@ -297,7 +314,7 @@ const CONFIG = {
       <div class="callout">
         <strong>주문을 내기 전에 예수금을 먼저 보세요.</strong>
         가진 현금보다 많이 주문하면 살 수 있는 만큼만 체결되고 나머지는 자동 취소됩니다.
-        한 종목에 담을 수 있는 한도는 <b>400만원</b>(초기자금의 40%)입니다.
+        한 종목에 매수할 수 있는 한도는 <b>400만원</b>(초기자금의 40%)입니다.
       </div>
       <div class="callout warnc">
         <strong>보고서를 쓸 때 이 화면이 그대로 자료가 됩니다.</strong>
@@ -522,6 +539,7 @@ function render(code, d){
     zw.style.display='none';
   }
 
+  renderOrderBox(cash);
   renderHolding(d.holding);
   renderFills(d.fills);
   renderTrend(d.trend);
@@ -530,6 +548,49 @@ function render(code, d){
   $('#acctView').classList.remove('hidden');
   window.scrollTo(0,0);
 }
+
+/* ---------- 매매주문 접수창 ---------- */
+const ORDER_URL   = 'https://docs.google.com/forms/d/e/1FAIpQLSdHNRvOphcK2w1EW0nMybl9QIl7AEFLdIN9stn-IuFpuS1o_A/viewform';
+const ORDER_OPEN  = 20;      // 20:00 개시
+let   ORDER_CASH  = null;    // 카운트다운을 다시 그릴 때 쓰려고 들고 있습니다
+
+/** 브라우저가 어느 시간대에 있든 한국시간(KST) 기준 '지금' 을 돌려줍니다. */
+function nowKST(){
+  const d = new Date();
+  return new Date(d.getTime() + d.getTimezoneOffset()*60000 + 9*3600000);
+}
+
+function renderOrderBox(cash){
+  const a = $('#orderBtn'); if(!a) return;
+  if(cash !== undefined) ORDER_CASH = cash;
+  a.href = ORDER_URL;
+  $('#orderCash').textContent = (ORDER_CASH==null) ? '—' : won(ORDER_CASH)+'원';
+
+  const t = nowKST(), h = t.getHours(), m = t.getMinutes(), dow = t.getDay();
+  const 거래일 = dow>=1 && dow<=5;                 // 0=일 … 6=토
+  const b = $('#orderBadge'), w = $('#orderWhen');
+
+  if(거래일 && h >= ORDER_OPEN){
+    const 남은 = 24*60 - (h*60 + m);
+    b.textContent = '접수 중';  b.className = 'badge live';
+    w.innerHTML = '지금 주문할 수 있습니다. <b>자정까지 ' +
+      Math.floor(남은/60) + '시간 ' + (남은%60) + '분</b> 남았습니다.';
+    a.style.opacity = '';
+  }else if(거래일){
+    const 뒤 = ORDER_OPEN*60 - (h*60 + m);
+    b.textContent = '오늘 밤 열림';  b.className = 'badge soon';
+    w.innerHTML = '오늘 밤 <b>20:00</b> 에 열립니다 — ' +
+      Math.floor(뒤/60) + '시간 ' + (뒤%60) + '분 뒤입니다. ' +
+      '미리 열어 볼 수는 있지만, 20시 전에 낸 주문은 무효 처리됩니다.';
+    a.style.opacity = '.7';
+  }else{
+    b.textContent = '거래일 아님';  b.className = 'badge';
+    w.innerHTML = '오늘은 거래일이 아닙니다. <b>다음 거래일(월~금) 밤 20:00</b> 에 열립니다. ' +
+      '주말에 낸 주문은 무효 처리되어 기록에 남지 않습니다.';
+    a.style.opacity = '.7';
+  }
+}
+setInterval(function(){ renderOrderBox(); }, 30000);   // 카운트다운 갱신
 
 function renderHolding(rows){
   const tb = $('#holdTable tbody');
