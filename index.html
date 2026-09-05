@@ -1071,6 +1071,39 @@ function renderLastOrder(){
   }
   $('#lastOrderHead').textContent=head;
   $('#lastOrderBody').textContent=body;
+  lockOrderBtn(today>L, lab);
+}
+
+/* 마지막 주문일이 지나면 「매매주문 제출하기」 단추를 잠급니다.
+   눌리지 않게만 하는 것이 아니라 글자도 바꿔서, 학생이 왜 못 누르는지 알게 합니다.
+   (폼 자체는 그대로 열려 있습니다 — 주소를 아는 학생이 직접 들어가 내면
+    9/23 제출분이라 [주문정리] 가 무효로 처리합니다. 화면에서 길을 막는 것이 목적입니다.) */
+function lockOrderBtn(잠글까, lab){
+  const a=$('#btnOrder'); if(!a) return;
+  if(!a.dataset.origLabel){          // 원래 글자·주소를 한 번만 기억해 둡니다
+    a.dataset.origLabel = a.textContent;
+    a.dataset.origHref  = a.getAttribute('href') || '#';
+  }
+  if(잠글까){
+    if(a.dataset.locked==='1') return;
+    a.dataset.locked='1';
+    a.textContent='매매주문 접수 마감';
+    a.setAttribute('href','#');
+    a.removeAttribute('target');
+    a.setAttribute('aria-disabled','true');
+    a.title=`주문 접수는 ${lab} 밤으로 끝났습니다`;
+    a.style.opacity=.45;
+    a.style.pointerEvents='none';
+    a.style.filter='grayscale(1)';
+  }else if(a.dataset.locked==='1'){  // 되돌리기 (날짜를 앞당겨 확인할 때 씁니다)
+    a.dataset.locked='';
+    a.textContent=a.dataset.origLabel;
+    a.setAttribute('href',a.dataset.origHref);
+    if(a.dataset.origHref!=='#') a.target='_blank';
+    a.removeAttribute('aria-disabled');
+    a.removeAttribute('title');
+    a.style.opacity=''; a.style.pointerEvents=''; a.style.filter='';
+  }
 }
 
 function tickTimer(){
@@ -1997,8 +2030,6 @@ function applyConfigText(){
   $('#miniSeed').textContent = fmtWonShort(CONFIG.seedMoney)+'원';
   $('#miniUniv').textContent = CONFIG.universe;
   $('#orderWindow').textContent = `${CONFIG.orderOpen}:00~24:00`;
-  renderLastOrder();
-  setInterval(renderLastOrder, 60000);   // 날짜가 바뀌면 저절로 문구가 바뀝니다
   $('#ruleFee').textContent = (CONFIG.feeRate*100).toFixed(3)+'%';
   $('#ruleTax').textContent = (CONFIG.taxRate*100).toFixed(2)+'%';
   $('#ruleWeight').textContent = Math.round(CONFIG.maxWeight*100)+'%';
@@ -2012,6 +2043,10 @@ function applyConfigText(){
     else { a.href='#'; a.textContent=a.textContent.replace(/$/,''); a.setAttribute('aria-disabled','true');
       a.style.opacity=.5; a.style.pointerEvents='none'; a.textContent+=' (준비중)'; }
   });
+  // ★ 단추 주소를 다 붙인 다음에 불러야 합니다.
+  //   마지막 주문일이 지나면 여기서 「매매주문 제출하기」 단추를 잠급니다.
+  renderLastOrder();
+  setInterval(renderLastOrder, 60000);   // 날짜가 바뀌면 저절로 문구와 단추가 바뀝니다
   const cats=[...new Set(TERMS.map(t=>t[0]))];
   $('#termCat').innerHTML='<option value="all">전체 분류</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join('');
 }
