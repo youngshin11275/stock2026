@@ -1254,10 +1254,20 @@ function drawHist(){
   const svg=$('#histChart'); svg.innerHTML='';
   if(!STATE.rank.length) return;
   const vals=STATE.rank.map(r=>r.cum);
-  const lo=Math.floor(Math.min(...vals)/5)*5, hi=Math.ceil(Math.max(...vals)/5)*5;
+
+  /* 구간 폭을 자동으로 고릅니다.
+     · 수익률이 아직 촘촘한 대회 초·중반에는 1%씩 잘게 나눠 차이가 보이게 하고,
+     · 학생 간 격차가 벌어질수록 2 → 3 → 4 → 5 → 10 … 으로 스스로 넓어집니다.
+     · 막대가 20개를 넘으면 읽기 어려워지므로 그 선을 기준으로 삼습니다.
+     손댈 필요 없이 대회가 진행되는 대로 알아서 바뀝니다. */
+  const 폭후보=[1,2,3,4,5,10,20,25,50], 최대막대=20;
+  const 퍼짐=Math.max(...vals)-Math.min(...vals);
+  const step=폭후보.find(w=>퍼짐/w<=최대막대) || 100;
+
+  const lo=Math.floor(Math.min(...vals)/step)*step, hi=Math.ceil(Math.max(...vals)/step)*step;
   const bins=[];
-  for(let v=lo; v<hi; v+=5) bins.push({from:v,to:v+5,n:0});
-  if(!bins.length) bins.push({from:lo,to:lo+5,n:0});
+  for(let v=lo; v<hi; v+=step) bins.push({from:v,to:v+step,n:0});
+  if(!bins.length) bins.push({from:lo,to:lo+step,n:0});
   vals.forEach(v=>{ const b=bins.find(b=>v>=b.from&&v<b.to)||bins[bins.length-1]; b.n++; });
 
   const W=880,H=230,padL=34,padR=14,padT=12,padB=40;
@@ -1271,13 +1281,14 @@ function drawHist(){
     tx.textContent=t; svg.appendChild(tx);
   });
   const slot=(W-padL-padR)/bins.length, bw=Math.min(24,slot-2); // 이웃 막대 사이 2px 표면 간격
+  const 라벨간격=Math.max(1,Math.ceil(bins.length/12));            // 가로축 글자가 겹치지 않게
   const tip=$('#histTip');
   bins.forEach((b,i)=>{
     const x=padL+i*slot+(slot-bw)/2, y=Y(b.n), h=Math.max(b.n?2:0, Y(0)-Y(b.n));
     if(b.n) svg.appendChild(el('path',{d:barPath(x,y,bw,h,4,'right'),
       fill: b.to<=0? cssv('--down') : b.from>=0? cssv('--up') : cssv('--flat'),
       transform:`rotate(0)`}));
-    if(i%2===0||bins.length<10){
+    if(i%라벨간격===0){
       const tx=el('text',{x:x+bw/2,y:H-padB+17,fill:cssv('--muted'),'font-size':10.5,'text-anchor':'middle','font-family':'var(--font)'});
       tx.textContent=(b.from>0?'+':'')+b.from; svg.appendChild(tx);
     }
@@ -1293,7 +1304,7 @@ function drawHist(){
     svg.appendChild(hit);
   });
   const lab=el('text',{x:W-padR,y:H-6,fill:cssv('--muted'),'font-size':11,'text-anchor':'end','font-family':'var(--font)'});
-  lab.textContent='누적 수익률 구간(%)  ·  세로축: 인원(명)'; svg.appendChild(lab);
+  lab.textContent=`누적 수익률 구간(${step}%씩)  ·  세로축: 인원(명)`; svg.appendChild(lab);
 
   const sorted=[...vals].sort((a,b)=>a-b);
   $('#statAvg').textContent=fmtPct(vals.reduce((a,b)=>a+b,0)/vals.length);
