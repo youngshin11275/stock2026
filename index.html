@@ -13,6 +13,9 @@
   color-scheme: light;
   --page:#f9f9f7; --surface:#fcfcfb; --surface-2:#f3f3f0;
   --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  /* Q&A 질문 글자색 — 굵게 하지 않고 색만으로 답변과 구분합니다.
+     --ink 와 --ink-2 사이에 둡니다. 너무 진하면 눈이 아픕니다. */
+  --qa-q:#262623;
   --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
   /* 한국 시장 관행: 상승=적색, 하락=청색 (발산형 diverging 쌍) */
   --up:#d03b3b; --down:#2a78d6; --flat:#898781;
@@ -30,6 +33,7 @@
     color-scheme: dark;
     --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
     --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --qa-q:#e6e5da;
     --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
     --up:#e66767; --down:#3987e5;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
@@ -41,6 +45,7 @@
   color-scheme: dark;
   --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
   --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+  --qa-q:#e6e5da;
   --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
   --up:#e66767; --down:#3987e5;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
@@ -194,12 +199,16 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--s1);outlin
 
 details{border-bottom:1px solid var(--grid)}
 details:last-of-type{border-bottom:none}
+/* Q&A — 질문은 굵게 하지 않습니다. 긴 질문이 많아 굵으면 눈이 아픕니다.
+   답변과는 ① 글자색 ② 글자 크기 ③ 파란 Q 표시 ④ 답변 들여쓰기,
+   네 가지로 구분합니다. 굵기는 쓰지 않습니다. */
 details > summary{
-  cursor:pointer;padding:12px 0;font-weight:600;font-size:14.5px;list-style:none;
+  cursor:pointer;padding:12px 0;font-weight:400;font-size:14.5px;list-style:none;
+  color:var(--qa-q, var(--ink));line-height:1.65;
   display:flex;gap:8px;align-items:flex-start;
 }
 details > summary::-webkit-details-marker{display:none}
-details > summary::before{content:"Q";color:var(--s1);font-weight:800;flex:none}
+details > summary::before{content:"Q";color:var(--s1);font-weight:700;flex:none}
 details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-space:pre-line}
 
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:12px}
