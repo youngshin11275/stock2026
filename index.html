@@ -326,6 +326,13 @@ const CONFIG = {
   endDate    : "2026-09-23",
   holidays   : [],                    // 기간 중 휴장일이 있으면 "2026-09-25" 형식으로 추가
 
+  /* 마지막으로 주문을 받는 날.
+     폐막일(9/23)에는 주문을 받지 않고 그날 종가로 최종 평가만 합니다.
+     그래서 학생이 실제로 주문을 낼 수 있는 마지막 밤은 그 하루 전인 9/22 입니다.
+     이 값을 바꾸면 홈 화면 안내문 · 거래 규정 표 · 운영 단계가 한꺼번에 바뀝니다.
+     비워 두면("") 관련 안내가 모두 사라집니다. */
+  lastOrderDate : "2026-09-22",
+
   // 주문 접수 시간 (한국시간)
   orderOpen  : 20,                    // 20시 개시
   orderClose : 24,                    // 24시 마감
@@ -449,6 +456,10 @@ const CONFIG = {
   <div class="card">
     <h2>오늘 할 일</h2>
     <p class="sub">주문은 매일 밤 <b id="orderWindow">20:00~24:00</b> 사이에만 접수됩니다. 마감 후 제출분은 반영되지 않습니다.</p>
+    <div class="callout warnc" id="lastOrderCallout" style="display:none">
+      <strong id="lastOrderHead">마지막 주문일은 9/22(화) 20:00~24:00입니다.</strong>
+      <span id="lastOrderBody"></span>
+    </div>
     <div class="toolrow">
       <a class="btn" id="btnOrder" href="#">매매주문 제출하기</a>
       <a class="btn ghost" id="btnReport" href="#">투자근거 보고서 제출</a>
@@ -1023,6 +1034,45 @@ function phaseOf(now){
   if(now > e) return 'after';
   return 'live';
 }
+/* ── 마지막 주문일 안내 ──────────────────────────────────
+   CONFIG.lastOrderDate 하루만 고치면 아래 문구가 전부 따라옵니다.
+   날짜가 지나면 문구가 저절로 바뀌므로 손댈 일이 없습니다. */
+function lastOrderLabel(){
+  const s=(CONFIG.lastOrderDate||'').trim();
+  if(!s) return '';
+  const d=parseD(s);
+  return `${d.getMonth()+1}/${d.getDate()}(${DOW[d.getDay()]})`;
+}
+function renderLastOrder(){
+  const box=$('#lastOrderCallout'); if(!box) return;
+  const L=(CONFIG.lastOrderDate||'').trim();
+  if(!L){ box.style.display='none'; return; }
+  box.style.display='';
+
+  const today=dstr(nowKST());
+  const lab=lastOrderLabel();
+  const endD=parseD(CONFIG.endDate);
+  const endLab=`${endD.getMonth()+1}/${endD.getDate()}(${DOW[endD.getDay()]})`;
+  const 남은=TDAYS.filter(d=>d>=today && d<=L).length;   // 오늘 포함, 주문 낼 수 있는 밤의 수
+
+  let head='', body='';
+  if(today<L){
+    head=`마지막 주문일은 ${lab} ${CONFIG.orderOpen}:00~24:00입니다.`;
+    body=` 주문을 낼 수 있는 밤이 오늘을 포함해 ${남은}번 남았습니다. `+
+         `${lab} 밤 24:00이 지나면 더 이상 주문을 받지 않고, `+
+         `${endLab} 종가로 최종 성적이 정해집니다. 팔 생각이 있다면 날짜를 넘기지 마세요.`;
+  }else if(today===L){
+    head=`오늘이 마지막 주문일입니다 — ${lab} ${CONFIG.orderOpen}:00~24:00.`;
+    body=` 오늘 밤 24:00이 지나면 더 이상 주문을 낼 수 없습니다. `+
+         `${endLab} 종가로 최종 성적이 정해지므로, 마지막으로 손볼 것이 있으면 오늘 밤에 하세요.`;
+  }else{
+    head=`주문 접수가 모두 끝났습니다. 마지막 주문일은 ${lab} 밤이었습니다.`;
+    body=` 이제 ${endLab} 종가로 최종 평가만 남았습니다. 보유 종목은 그대로 유지됩니다.`;
+  }
+  $('#lastOrderHead').textContent=head;
+  $('#lastOrderBody').textContent=body;
+}
+
 function tickTimer(){
   const now = nowKST();
   const ph  = phaseOf(now);
@@ -1047,7 +1097,13 @@ function tickTimer(){
     note = '최종 순위와 시상 결과는 공지사항을 확인해 주세요.';
   }else{
     badge.textContent='진행 중'; badge.className='badge live';
-    if(!isTradeDay){
+    const LOd=(CONFIG.lastOrderDate||'').trim();
+    if(LOd && today>LOd){
+      // 마지막 주문일이 지난 뒤 — 폐막일까지는 주문 창을 열지 않습니다.
+      label='주문 접수 종료';
+      fig='최종 평가만 남았습니다';
+      note=`주문은 ${lastOrderLabel()} 밤으로 끝났습니다 · ${CONFIG.endDate.replace(/-/g,'.')} 종가로 최종 성적이 정해집니다`;
+    }else if(!isTradeDay){
       const next = TDAYS.find(d=>d>today);
       label='오늘은 휴장일입니다';
       fig = next ? '다음 거래일 '+next.slice(5).replace('-','/') : '마지막 거래일 종료';
@@ -1068,6 +1124,11 @@ function tickTimer(){
       }
     }
   }
+  // 마지막 주문일 즈음에는 큰 시계 밑 설명에도 한마디 붙여 둡니다.
+  //   (label·fig 는 건드리지 않습니다 — 남은 시간 표시는 그대로여야 하니까요)
+  const LO=(CONFIG.lastOrderDate||'').trim();
+  if(LO && ph==='live' && today===LO) note = '★ 오늘이 마지막 주문일입니다 · ' + note;
+
   $('#timerLabel').textContent=label;
   $('#timerFigure').classList.toggle('live', urgent);
   $('#timerFigure').textContent=fig;
@@ -1464,7 +1525,8 @@ function defaultNotices(){
 
 function renderCal(){
   const s=parseD(CONFIG.startDate), e=parseD(CONFIG.endDate);
-  $('#calSub').textContent = `${CONFIG.startDate.replace(/-/g,'.')}(${DOW[s.getDay()]}) ~ ${CONFIG.endDate.replace(/-/g,'.')}(${DOW[e.getDay()]}) · 총 ${TDAYS.length}거래일`;
+  $('#calSub').textContent = `${CONFIG.startDate.replace(/-/g,'.')}(${DOW[s.getDay()]}) ~ ${CONFIG.endDate.replace(/-/g,'.')}(${DOW[e.getDay()]}) · 총 ${TDAYS.length}거래일`
+    + (CONFIG.lastOrderDate ? ` · 주문은 ${lastOrderLabel()} 밤이 마지막입니다` : '');
   const months=[]; const cur=new Date(s.getFullYear(),s.getMonth(),1);
   while(cur <= e){ months.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); }
   const today=dstr(nowKST());
@@ -1480,7 +1542,8 @@ function renderCal(){
       const edge = ds===CONFIG.startDate||ds===CONFIG.endDate;
       const cl=['d']; if(inRange) cl.push('in'); if(isT) cl.push('trade'); if(edge) cl.push('edge');
       if(ds===today) cl.push('today');
-      const mark = ds===CONFIG.startDate?'개막': ds===CONFIG.endDate?'폐막':'';
+      const mark = ds===CONFIG.startDate?'개막': ds===CONFIG.endDate?'폐막'
+                 : ds===(CONFIG.lastOrderDate||'')?'주문끝':'';
       cells+=`<div class="${cl.join(' ')}">${d}${mark?`<small>${mark}</small>`:''}</div>`;
     }
     return `<div><p class="calmonth">${y}년 ${mo+1}월</p><div class="cal">${cells}</div></div>`;
@@ -1491,7 +1554,8 @@ function renderPhases(){
   const s=CONFIG.startDate.replace(/-/g,'.'), e=CONFIG.endDate.replace(/-/g,'.');
   const rows=[
     ['① 사전 교육 · 닉네임 등록', `개막 1주 전 · 규정 설명, 종목 선정 방법 안내, 닉네임 제출`],
-    ['② 모의투자 운영', `${s} ~ ${e} · 총 ${TDAYS.length}거래일, 매일 밤 ${CONFIG.orderOpen}:00~24:00 주문 접수`],
+    ['② 모의투자 운영', `${s} ~ ${e} · 총 ${TDAYS.length}거래일, 매일 밤 ${CONFIG.orderOpen}:00~24:00 주문 접수` +
+      (CONFIG.lastOrderDate ? `<br><b>주문은 ${lastOrderLabel()} 밤이 마지막</b> · ${e.slice(5)} 폐막일은 주문 없이 그날 종가로 최종 평가` : '')],
     ['③ 중간 점검', `2주차 종료 시점 · 중간 순위 게시, 상위 참가자 매매 사례 공유`],
     ['④ 지필평가', `9/15(화) 15:20~16:00 (잠정) · 경제·주식 기본 상식 40점 (객관식 + 단답형)`],
     ['⑤ 보고서 제출', `폐막 후 1주 이내 · 종목 선정 근거, 매매 판단, 복기 내용`],
@@ -1506,7 +1570,8 @@ function renderRules(){
     ['가상 자금', `1인당 ${fmtWon(c.seedMoney)} (전원 동일, 추가 입금 없음)`],
     ['거래 가능 종목', `아래 <b>업종별 대표 50종목</b>에 한함 — 10개 업종 × 각 시가총액 상위 5개 (ETF·선물·해외주식·공매도 불가)`],
     ['1종목 보유 한도', `초기 자금의 ${Math.round(c.maxWeight*100)}%(${fmtWon(c.seedMoney*c.maxWeight)}) 이내 — 당일 종가 기준 보유 평가액이며, 한도를 넘는 주문은 한도까지만 체결됩니다`],
-    ['주문 접수 시간', `거래일 밤 ${c.orderOpen}:00 ~ 24:00 (한국시간) · 구글폼 제출분만 인정`],
+    ['주문 접수 시간', `거래일 밤 ${c.orderOpen}:00 ~ 24:00 (한국시간) · 구글폼 제출분만 인정` +
+      (c.lastOrderDate ? `<br><b>마지막 주문일은 ${lastOrderLabel()} ${c.orderOpen}:00~24:00</b> — 폐막일에는 주문을 받지 않고 그날 종가로 최종 평가만 합니다` : '')],
     ['체결 기준', '제출일의 <b>정규장 종가(오후 3시 30분)</b>로 체결한 것으로 처리 (장중 매매·지정가 주문 없음)<br>' +
       '<span style="color:var(--muted)">시간외 거래나 대체거래소(넥스트레이드 등) 가격은 반영하지 않습니다. ' +
       '모든 참가자에게 같은 기준을 적용하기 위한 것입니다.</span>'],
@@ -1932,6 +1997,8 @@ function applyConfigText(){
   $('#miniSeed').textContent = fmtWonShort(CONFIG.seedMoney)+'원';
   $('#miniUniv').textContent = CONFIG.universe;
   $('#orderWindow').textContent = `${CONFIG.orderOpen}:00~24:00`;
+  renderLastOrder();
+  setInterval(renderLastOrder, 60000);   // 날짜가 바뀌면 저절로 문구가 바뀝니다
   $('#ruleFee').textContent = (CONFIG.feeRate*100).toFixed(3)+'%';
   $('#ruleTax').textContent = (CONFIG.taxRate*100).toFixed(2)+'%';
   $('#ruleWeight').textContent = Math.round(CONFIG.maxWeight*100)+'%';
