@@ -953,16 +953,56 @@ function parseCSV(text){
   });
 }
 /** 구글이 가끔 500/400 을 돌려주므로 몇 번 다시 시도한다 */
+/* ── 시트 불러오기 ───────────────────────────────────────
+   구글의 '웹에 게시' 주소는 가끔 응답을 주지 않고 그냥 멈춥니다(정해진 시각 없이).
+   예전에는 시간 제한이 없어서, 시트 하나가 멈추면 아래 Promise.all 이 끝나지 않아
+   페이지 전체가 영영 '샘플 데이터' 상태로 남았습니다. (2026-09-07 실제로 그랬습니다)
+   그래서 ① 요청마다 시간 제한을 두고 ② 실패하면 지난번에 받아 둔 것으로 대신합니다. */
+/*  6초 × 2번 = 최악이라도 약 13초면 화면이 그려집니다.
+    오래 붙잡고 있어 봐야 소용없고, 못 받은 것은 20초 뒤 조용히 다시 받아 옵니다. */
+const SHEET_TIMEOUT = 6000;                 // 한 번 시도에 6초까지만 기다립니다
+const SHEET_TRIES = 2;                      // 두 번까지만 시도합니다
+const CACHE_KEY = 'stock2026:csv:';         // 마지막으로 성공한 자료를 이 이름으로 저장
+
+function 캐시저장(url, text){
+  try{ localStorage.setItem(CACHE_KEY+url, JSON.stringify({t:Date.now(), text})); }
+  catch(e){ /* 사생활 보호 모드 등 — 저장 못 해도 그만입니다 */ }
+}
+function 캐시읽기(url){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY+url);
+    if(!raw) return null;
+    const o = JSON.parse(raw);
+    return (o && o.text) ? o : null;
+  }catch(e){ return null; }
+}
+
 async function loadSheet(url, tries){
   if(!url) return null;
-  tries = tries || 3;
+  tries = tries || SHEET_TRIES;
   for(let i=0;i<tries;i++){
     try{
-      const res = await fetch(url,{cache:'no-store'});
+      const ctl = new AbortController();
+      const timer = setTimeout(()=>ctl.abort(), SHEET_TIMEOUT);
+      let res;
+      try{ res = await fetch(url,{cache:'no-store',signal:ctl.signal}); }
+      finally{ clearTimeout(timer); }
       if(!res.ok) throw new Error(res.status);
-      return parseCSV(await res.text());
+      const text = await res.text();
+      캐시저장(url, text);
+      return parseCSV(text);
     }catch(e){
-      if(i === tries-1){ console.warn('시트 불러오기 최종 실패:',url,e); return null; }
+      if(i === tries-1){
+        const old = 캐시읽기(url);
+        if(old){
+          console.warn('시트를 못 받아 저장해 둔 것으로 대신합니다:', url, e);
+          STATE.usedCache = true;
+          STATE.cacheAt = Math.max(STATE.cacheAt||0, old.t||0);
+          return parseCSV(old.text);
+        }
+        console.warn('시트 불러오기 최종 실패:', url, e);
+        return null;
+      }
       await new Promise(r=>setTimeout(r, 600*(i+1)));   // 0.6초 → 1.2초 뒤 재시도
     }
   }
@@ -1031,7 +1071,8 @@ function elapsedTradingDays(){
 /* ============================================================
    3. 상태
    ============================================================ */
-const STATE = { rank:[], daily:[], notice:[], faq:[], links:[], price:null, isDemo:true, loadError:false, me:'' };
+const STATE = { rank:[], daily:[], notice:[], faq:[], links:[], price:null, isDemo:true, loadError:false, me:'',
+                usedCache:false, cacheAt:0, retryTimer:null };
 
 /* ============================================================
    4. 타이머 · 진행 단계
@@ -2190,12 +2231,35 @@ async function loadAll(){
     badge.textContent='불러오기 실패';
     badge.className='badge err';
     badge.title='구글시트에서 자료를 받지 못했습니다. 잠시 후 새로고침해 주세요.';
+  }else if(live && STATE.usedCache){
+    // 구글이 응답을 안 줘서 저장해 둔 자료로 그린 경우.
+    // '실시간 집계' 라고 하면 거짓말이 되므로 언제 것인지 밝힌다.
+    const 때 = STATE.cacheAt ? new Date(STATE.cacheAt) : null;
+    const 언제 = 때 ? `${pad(때.getMonth()+1)}/${pad(때.getDate())} ${pad(때.getHours())}:${pad(때.getMinutes())}` : '';
+    badge.textContent = '저장된 자료';
+    badge.className = 'badge soon';
+    badge.title = '구글시트가 응답하지 않아 이 기기에 저장해 둔 자료로 보여 주고 있습니다'
+                + (언제 ? ` (${언제} 기준)` : '') + '. 잠시 뒤 저절로 다시 받아 옵니다.';
   }else{
     badge.textContent = live ? '실시간 집계' : '샘플 데이터';
     // 색까지 바꿔야 눈에 띈다 — 초록이면 실제 자료, 노랑이면 예시 화면
     badge.className = 'badge ' + (live ? 'live' : 'soon');
     badge.title = live ? '구글시트에서 불러온 실제 집계 결과입니다'
                        : '구글시트 주소를 넣기 전까지 보이는 예시 화면입니다';
+  }
+
+  // 못 받아온 것이 있으면 조용히 다시 시도한다.
+  //   학생이 새로고침을 몰라도 저절로 채워지도록. 성공하면 더 걸지 않는다.
+  if(STATE.loadError || STATE.usedCache){
+    if(!STATE.retryTimer){
+      STATE.retryTimer = setTimeout(function(){
+        STATE.retryTimer = null;
+        STATE.usedCache = false;
+        loadAll().catch(function(e){ console.warn('다시 받기 실패', e); });
+      }, 20000);
+    }
+  }else if(STATE.retryTimer){
+    clearTimeout(STATE.retryTimer); STATE.retryTimer = null;
   }
 
   const last=[...new Set(STATE.daily.map(r=>r.date))].sort().pop();

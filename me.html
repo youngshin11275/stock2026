@@ -414,13 +414,58 @@ function parseCSV(text){
     const o={}; head.forEach((h,i)=> o[h]=(r[i]??'').trim()); return o;
   });
 }
-async function loadSheet(url){
-  if(!url) return null;
+/* ── 시트 불러오기 ───────────────────────────────────────
+   구글의 '웹에 게시' 주소는 가끔 응답을 주지 않고 그냥 멈춥니다(정해진 시각 없이).
+   예전에는 시간 제한이 없어서, 시트 하나가 멈추면 아래 Promise.all 이 끝나지 않아
+   「내 계좌」가 영영 안 열렸습니다. (2026-09-07 실제로 그랬습니다)
+   그래서 ① 요청마다 시간 제한을 두고 ② 실패하면 지난번에 받아 둔 것으로 대신합니다. */
+/*  6초 x 2번 = 최악이라도 약 13초. 오래 붙잡아 봐야 소용없습니다. */
+const SHEET_TIMEOUT = 6000;                 // 한 번 시도에 6초까지만
+const SHEET_TRIES = 2;                      // 두 번까지만
+const CACHE_KEY = 'stock2026:csv:';         // 마지막으로 성공한 자료
+
+function 캐시저장(url, text){
+  try{ localStorage.setItem(CACHE_KEY+url, JSON.stringify({t:Date.now(), text})); }
+  catch(e){ /* 저장 못 해도 그만입니다 */ }
+}
+function 캐시읽기(url){
   try{
-    const res = await fetch(url,{cache:'no-store'});
-    if(!res.ok) throw new Error(res.status);
-    return parseCSV(await res.text());
-  }catch(e){ console.warn('시트 불러오기 실패:', url, e); return null; }
+    const raw = localStorage.getItem(CACHE_KEY+url);
+    if(!raw) return null;
+    const o = JSON.parse(raw);
+    return (o && o.text) ? o : null;
+  }catch(e){ return null; }
+}
+
+async function loadSheet(url, tries){
+  if(!url) return null;
+  tries = tries || SHEET_TRIES;
+  for(let i=0;i<tries;i++){
+    try{
+      const ctl = new AbortController();
+      const timer = setTimeout(()=>ctl.abort(), SHEET_TIMEOUT);
+      let res;
+      try{ res = await fetch(url,{cache:'no-store',signal:ctl.signal}); }
+      finally{ clearTimeout(timer); }
+      if(!res.ok) throw new Error(res.status);
+      const text = await res.text();
+      캐시저장(url, text);
+      return parseCSV(text);
+    }catch(e){
+      if(i === tries-1){
+        const old = 캐시읽기(url);
+        if(old){
+          console.warn('시트를 못 받아 저장해 둔 것으로 대신합니다:', url, e);
+          DATA.usedCache = true;
+          DATA.cacheAt = Math.max(DATA.cacheAt||0, old.t||0);
+          return parseCSV(old.text);
+        }
+        console.warn('시트 불러오기 최종 실패:', url, e);
+        return null;
+      }
+      await new Promise(r=>setTimeout(r, 600*(i+1)));
+    }
+  }
 }
 function pick(o, ...keys){
   for(const k of keys) if(o[k]!==undefined && o[k]!=='') return o[k];
@@ -430,7 +475,8 @@ function pick(o, ...keys){
 /* ============================================================
    2. 상태
    ============================================================ */
-const DATA = { summary:null, holding:null, fills:null, trend:null, isDemo:true, loaded:false };
+const DATA = { summary:null, holding:null, fills:null, trend:null, isDemo:true, loaded:false,
+               usedCache:false, cacheAt:0 };
 
 /* ============================================================
    3. 샘플 데이터 — 시트를 붙이기 전에도 화면을 볼 수 있게
@@ -486,14 +532,20 @@ function demoFor(code){
 async function ensureData(){
   if(DATA.loaded) return;
   const s = CONFIG.sheets;
+  DATA.usedCache = false;
   const [su, ho, fi, tr] = await Promise.all([
     loadSheet(s.summary), loadSheet(s.holding), loadSheet(s.fills), loadSheet(s.trend)
   ]);
   if(su && su.length){
     DATA.summary=su; DATA.holding=ho||[]; DATA.fills=fi||[]; DATA.trend=tr||[];
     DATA.isDemo=false;
+    // 저장해 둔 자료로 그렸다면 다음에 다시 받아 볼 수 있게 열어 둔다.
+    DATA.loaded = !DATA.usedCache;
+  }else{
+    // 아무것도 못 받았으면 '다 불러왔다' 고 표시하지 않는다.
+    // 그래야 학생이 코드를 다시 넣었을 때 새로 시도한다.
+    DATA.loaded = false;
   }
-  DATA.loaded = true;
 }
 
 /** 해당 코드의 자료를 뽑아온다 (없으면 null) */
@@ -782,13 +834,32 @@ async function openAccount(code, fromSaved){
   err.textContent = '불러오는 중…';
   await ensureData();
 
+  // 구글이 가끔 응답을 안 줍니다. 한 번 더 조용히 시도해 봅니다 —
+  // 학생이 두 번 누르지 않아도 되도록. (실제로 두 번째에는 거의 성공합니다)
+  if(!DATA.summary || !DATA.summary.length){
+    err.textContent = '조금 오래 걸립니다. 다시 받아 보는 중…';
+    await new Promise(r=>setTimeout(r, 1500));
+    await ensureData();
+  }
+
+  // ★ 자료를 아예 못 받은 것과, 코드가 명단에 없는 것은 다릅니다.
+  //   예전에는 둘 다 "명단에 없는 코드입니다" 라고 알려서,
+  //   코드가 멀쩡한 학생이 자기 코드를 의심하게 만들었습니다. (2026-09-07 고침)
+  if(!DATA.summary || !DATA.summary.length){
+    err.textContent = '지금 자료를 불러오지 못했습니다. 여러분 코드 문제가 아닙니다. '
+                    + '잠시 뒤 [내 계좌 열기] 를 한 번 더 눌러 주세요.';
+    return;
+  }
+
   const d = rowsFor(code);
   if(!d){
     err.textContent = code + ' 은(는) 참가자 명단에 없는 코드입니다. 문자로 받은 코드를 다시 확인해 주세요.';
     if(fromSaved){ try{ localStorage.removeItem(LSKEY); }catch(e){} }
     return;
   }
-  err.textContent = '';
+  err.textContent = DATA.usedCache
+    ? '구글시트가 느려서 이 기기에 저장해 둔 자료로 보여 주고 있습니다. 잠시 뒤 다시 열면 최신으로 바뀝니다.'
+    : '';
   if($('#rememberChk').checked || fromSaved){
     try{ localStorage.setItem(LSKEY, code); }catch(e){}
   }
