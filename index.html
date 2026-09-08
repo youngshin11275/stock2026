@@ -211,6 +211,42 @@ details > summary::-webkit-details-marker{display:none}
 details > summary::before{content:"Q";color:var(--s1);font-weight:700;flex:none}
 details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-space:pre-line}
 
+/* ── 행사 안내 쪽지 (지필평가 · 특강) ──────────────────────
+   학생이 주문하러 들어왔을 때 맨 먼저 보이도록 눈에 띄게. */
+.evt{
+  background:var(--surface);border:2px solid var(--s2);
+  border-radius:var(--radius);padding:14px 16px;margin:14px 0 0;
+  display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;
+}
+.evt + .evt{margin-top:10px}
+.evt .bell{font-size:22px;line-height:1.2;flex:none}
+.evt .body{flex:1 1 260px;min-width:0}
+.evt .ttl{font-size:16.5px;font-weight:800;letter-spacing:-.02em;margin:0 0 2px;color:var(--ink)}
+.evt .ttl .tg{
+  display:inline-block;background:var(--s2);color:#fff;border-radius:6px;
+  font-size:12px;font-weight:700;padding:2px 9px;margin-right:8px;vertical-align:2px;letter-spacing:0;
+}
+.evt dl{margin:8px 0 0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:14px}
+.evt dt{color:var(--muted);font-size:12.5px;font-weight:600;white-space:nowrap;padding-top:1px}
+.evt dd{margin:0;color:var(--ink-2)}
+.evt dd b{color:var(--ink)}
+.evt .must{
+  margin:10px 0 0;font-size:13.5px;font-weight:700;color:var(--s2);
+  background:color-mix(in srgb,var(--s2) 10%,transparent);
+  border-radius:8px;padding:7px 11px;
+}
+.evt .dday{
+  flex:none;text-align:center;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;padding:8px 12px;min-width:76px;
+}
+.evt .dday .n{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--s2);line-height:1.15}
+.evt .dday .k{font-size:11px;color:var(--muted);margin-top:1px}
+@media(max-width:560px){
+  .evt{padding:12px 13px}
+  .evt dl{grid-template-columns:1fr;gap:1px 0}
+  .evt dt{margin-top:6px}
+}
+
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:12px}
 .cal .dow{text-align:center;color:var(--muted);font-size:11px;padding:4px 0;font-weight:600}
 .cal .d{
@@ -361,6 +397,28 @@ const CONFIG = {
   formReport : "https://docs.google.com/forms/d/e/1FAIpQLSc-Dd4WCyx5vTFVTuIgRJ-NYgH4IlFDfJFtn7l9YJS4EcmBtA/viewform",
   formQna    : "https://docs.google.com/forms/d/e/1FAIpQLScQS20pZdqgE3yUpqjNh24KAMfXKiphg2f1_R0UPWQt0UEd0A/viewform",
 
+  /* ── 행사 안내 쪽지 ──────────────────────────────────────
+     학생이 주문하러 들어왔을 때 맨 위에서 바로 보이는 알림입니다.
+     hide 시각이 지나면 저절로 사라지므로 나중에 지우러 오실 필요가 없습니다.
+     새 안내를 넣으려면 아래 { } 한 덩어리를 복사해 고치면 됩니다.
+       when  : 언제        where : 어디서
+       bring : 준비물      gather: 몇 시까지 모이나
+       hide  : 이 시각이 지나면 화면에서 사라짐 (yyyy-MM-dd HH:mm)     */
+  events: [
+    { tag:"지필평가", title:"지필평가를 실시합니다",
+      when:"9월 15일(화) 15:20 ~ 16:10",
+      where:"본관 지하 1층 해오름방",
+      bring:"개인 정보화기기 (태블릿 · 휴대폰 · 노트북 · 디벗 등)",
+      gather:"9월 15일(화) 15:15까지 모일 것",
+      hide:"2026-09-15 18:00" },
+    { tag:"특강", title:"특강을 실시합니다",
+      when:"9월 22일(화) 15:20 ~ 16:10",
+      where:"지성관 2층 세미나2실",
+      bring:"없음",
+      gather:"9월 22일(화) 15:15까지 모일 것",
+      hide:"2026-09-22 18:00" }
+  ],
+
   /* ── 지필평가 응시 단추 ─────────────────────────────────
      ★ 아래 시각은 '단추 문구'만 정합니다.
        실제로 문제가 보이고 안 보이고는, 선생님이 [지필평가] 스프레드시트에서
@@ -424,6 +482,8 @@ const CONFIG = {
     </nav>
   </div>
 </header>
+
+<div class="wrap" id="eventBoard"></div>
 
 <div class="wrap" id="examBanner" style="display:none">
   <a class="exambtn" id="examLink" href="#" target="_blank" rel="noopener">
@@ -1084,6 +1144,44 @@ function phaseOf(now){
   if(now > e) return 'after';
   return 'live';
 }
+/* ── 행사 안내 쪽지 (지필평가 · 특강) ──────────────────────
+   CONFIG.events 를 읽어 그립니다. hide 시각이 지난 것은 그리지 않습니다.
+   1분마다 다시 그리므로, 그 시각이 되면 보고 있던 화면에서도 저절로 사라집니다. */
+function renderEvents(){
+  const box = $('#eventBoard'); if(!box) return;
+  const now = nowKST();
+  const list = (CONFIG.events || []).filter(e => {
+    if(!e || !e.hide) return false;
+    const 사라질때 = examTime(e.hide);
+    return 사라질때 ? (now < 사라질때) : true;   // 시각을 못 읽으면 그냥 보여 줍니다
+  });
+
+  if(!list.length){ box.innerHTML=''; return; }
+
+  box.innerHTML = list.map(e => {
+    // 그날까지 며칠 남았는지 — 날짜만 비교합니다 (시각은 무시)
+    const d = examTime(e.hide) || now;
+    const 오늘0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const 그날0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const 남은 = Math.round((그날0 - 오늘0) / 86400000);
+    const dday = 남은 > 0 ? ('D-' + 남은) : (남은 === 0 ? '오늘' : '');
+
+    return `<div class="evt">
+      <span class="bell" aria-hidden="true">📢</span>
+      <div class="body">
+        <p class="ttl"><span class="tg">${esc(e.tag||'안내')}</span>${esc(e.title||'')}</p>
+        <dl>
+          <dt>일시</dt><dd><b>${esc(e.when||'')}</b></dd>
+          <dt>장소</dt><dd><b>${esc(e.where||'')}</b></dd>
+          <dt>준비물</dt><dd>${esc(e.bring||'없음')}</dd>
+        </dl>
+        ${e.gather ? `<p class="must">${esc(e.gather)}<br>반드시 참석 바랍니다.</p>` : ''}
+      </div>
+      ${dday ? `<div class="dday"><div class="n">${dday}</div><div class="k">${남은===0?'바로 오늘':'남았습니다'}</div></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
 /* ── 마지막 주문일 안내 ──────────────────────────────────
    CONFIG.lastOrderDate 하루만 고치면 아래 문구가 전부 따라옵니다.
    날짜가 지나면 문구가 저절로 바뀌므로 손댈 일이 없습니다. */
@@ -2076,6 +2174,8 @@ function applyConfigText(){
   renderUpdated(null);   // 시트를 못 불러와도 파일 갱신 시각은 보이도록 먼저 한 번
   renderExam();
   setInterval(renderExam, 30000);   // 시험 시각이 되면 저절로 나타납니다
+  renderEvents();
+  setInterval(renderEvents, 60000); // 안내 쪽지도 시각이 지나면 저절로 사라집니다
   document.title = CONFIG.eventName + ' · ' + CONFIG.schoolName;
   $('#miniSeed').textContent = fmtWonShort(CONFIG.seedMoney)+'원';
   $('#miniUniv').textContent = CONFIG.universe;
