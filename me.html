@@ -19,6 +19,8 @@
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --track:#cde2fb;
+  /* 제목 오렌지 — index.html 과 같은 값 */
+  --brand:#d9631a;
   --radius:14px;
   --font: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
 }
@@ -31,6 +33,7 @@
     --up:#e66767; --down:#3987e5;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
     --track:#184f95;
+    --brand:#FF9036;
   }
 }
 :root[data-theme="dark"]{
@@ -41,6 +44,7 @@
   --up:#e66767; --down:#3987e5;
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
   --track:#184f95;
+  --brand:#FF9036;
 }
 
 *{box-sizing:border-box}
@@ -52,9 +56,12 @@ a{color:var(--s1)}
 
 header.site{background:var(--surface);border-bottom:1px solid var(--border)}
 .hd{display:flex;align-items:center;gap:12px;padding:12px 0;flex-wrap:wrap}
-.brand{font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1.25}
-.brand small{display:block;font-weight:500;font-size:12.5px;color:var(--muted);
-  letter-spacing:0;margin-top:2px}
+/* 머리글 — 순위표 페이지(index.html)와 같은 규칙입니다.
+   페이지 이름은 크고 굵게 흰색, 행사 이름은 오렌지, '제1회' 앞머리만 회색. */
+.brand{font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1.25;color:var(--ink)}
+.brand .ord{color:var(--muted)}
+.brand small{display:block;font-weight:800;font-size:16.5px;color:var(--brand);
+  letter-spacing:-.02em;margin-top:3px;line-height:1.3}
 .navlinks{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .navlinks a{text-decoration:none;font-size:13.5px;font-weight:700;color:var(--ink-2);
   background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
@@ -220,7 +227,7 @@ const CONFIG = {
     <div class="hd">
       <div class="brand">
         내 계좌
-        <small>제1회 주식 포트폴리오 모의 운용 프로젝트</small>
+        <small><span class="ord">제1회</span> 주식 포트폴리오 모의 운용 프로젝트</small>
       </div>
       <div class="navlinks">
         <a href="./index.html">순위표 · 상황판</a>

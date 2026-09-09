@@ -72,9 +72,10 @@ header.site{
 .guidelink:hover,.guidelink:focus-visible{background:#D97706;outline:none}
 .guidelink.acct{background:#D97706}
 .guidelink.acct:hover,.guidelink.acct:focus-visible{background:#132347}
-/* 머리글 — 학교 이름을 크게(안내 쪽지 제목과 같은 16.5px), 행사 이름은 회색 톤으로
-   한 발 물러서게 두었습니다. 크기·굵기는 그대로 두고 색만 바꿉니다. */
-.brand{font-weight:800;font-size:25px;letter-spacing:-.02em;margin-right:auto;line-height:1.25;color:var(--muted)}
+/* 머리글 — 학교 이름은 크게(안내 쪽지 제목과 같은 16.5px) 흰색으로,
+   행사 이름은 원래 오렌지 그대로. 다만 '제1회' 앞머리만 회색으로 물러섭니다. */
+.brand{font-weight:800;font-size:25px;letter-spacing:-.02em;margin-right:auto;line-height:1.25;color:var(--brand)}
+.brand .ord{color:var(--muted)}
 .brand small{display:block;font-weight:800;font-size:16.5px;color:var(--ink);
   letter-spacing:-.02em;margin-top:3px;line-height:1.3}
 .badge{
@@ -2205,7 +2206,13 @@ function renderFaq(){
    7. 초기화
    ============================================================ */
 function applyConfigText(){
-  $('#brandName').textContent = CONFIG.eventName;
+  /* '제1회' 처럼 앞에 붙는 회차만 회색으로 물러서게 감싸 줍니다.
+     회차가 없는 이름이면 그냥 통째로 오렌지로 나옵니다. */
+  const 이름 = (CONFIG.eventName||'').trim();
+  const 회차 = 이름.match(/^(제\s*\d+\s*회)\s+([\s\S]+)$/);
+  $('#brandName').innerHTML = 회차
+    ? `<span class="ord">${esc(회차[1])}</span> ${esc(회차[2])}`
+    : esc(이름);
   $('#brandSchool').textContent = CONFIG.schoolName;
   renderUpdated(null);   // 시트를 못 불러와도 파일 갱신 시각은 보이도록 먼저 한 번
   renderExam();
