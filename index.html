@@ -72,8 +72,11 @@ header.site{
 .guidelink:hover,.guidelink:focus-visible{background:#D97706;outline:none}
 .guidelink.acct{background:#D97706}
 .guidelink.acct:hover,.guidelink.acct:focus-visible{background:#132347}
-.brand{font-weight:800;font-size:25px;letter-spacing:-.02em;margin-right:auto;line-height:1.25;color:var(--brand)}
-.brand small{display:block;font-weight:500;font-size:13px;color:var(--muted);letter-spacing:0;margin-top:2px}
+/* 머리글 — 학교 이름을 크게(안내 쪽지 제목과 같은 16.5px), 행사 이름은 회색 톤으로
+   한 발 물러서게 두었습니다. 크기·굵기는 그대로 두고 색만 바꿉니다. */
+.brand{font-weight:800;font-size:25px;letter-spacing:-.02em;margin-right:auto;line-height:1.25;color:var(--muted)}
+.brand small{display:block;font-weight:800;font-size:16.5px;color:var(--ink);
+  letter-spacing:-.02em;margin-top:3px;line-height:1.3}
 .badge{
   font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;
   border:1px solid var(--border); color:var(--ink-2); background:var(--surface-2);
@@ -1161,9 +1164,9 @@ function phaseOf(now){
    CONFIG.events 를 읽어 그립니다. hide 시각이 지난 것은 그리지 않습니다.
    1분마다 다시 그리므로, 그 시각이 되면 보고 있던 화면에서도 저절로 사라집니다.
 
-   쪽지는 아래 EVENT_TABS 에 적힌 메뉴에서만 보입니다. 모든 메뉴에 따라다니면
-   화면이 길어져 불편하다는 의견이 있어 <홈>과 <순위표>로 한정했습니다.
-   다른 메뉴에도 띄우고 싶으면 이 목록에 탭 이름만 추가하면 됩니다.
+   쪽지와 '지필평가 응시하기' 단추는 아래 EVENT_TABS 에 적힌 메뉴에서만 보입니다.
+   모든 메뉴에 따라다니면 화면이 길어져 불편하다는 의견이 있어 <홈>과 <순위표>로
+   한정했습니다. 다른 메뉴에도 띄우고 싶으면 이 목록에 탭 이름만 추가하면 됩니다.
    (탭 이름은 위 nav 의 data-tab 값 — home · rank · price · notice · rule · edu · qna) */
 const EVENT_TABS = ['home','rank'];
 function currentTab(){
@@ -2273,6 +2276,8 @@ function examTime(s){
 
 function renderExam(){
   const el = $('#examBanner'); if(!el) return;
+  // <홈> · <순위표> 밖에서는 단추를 감춥니다 (EVENT_TABS 참고)
+  if(!EVENT_TABS.includes(currentTab())){ el.style.display='none'; return; }
   const url = (CONFIG.examForm||'').trim();
   const 나타남 = examTime(CONFIG.examShow),  시작 = examTime(CONFIG.examStart);
   const 끝     = examTime(CONFIG.examEnd),   사라짐 = examTime(CONFIG.examHide);
@@ -2415,6 +2420,7 @@ function initTabs(){
     $$('main > section').forEach(s=>s.classList.add('hidden'));
     $('#tab-'+b.dataset.tab).classList.remove('hidden');
     syncEventBoard(b.dataset.tab);
+    renderExam();
     window.scrollTo({top:0,behavior:'smooth'});
     requestAnimationFrame(()=>{ drawBar(); drawLine(); drawHist(); drawScore(); if(STATE.price) drawSector(STATE.price); });
   }));
