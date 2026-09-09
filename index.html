@@ -259,7 +259,12 @@ details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-sp
 .cal .d.trade{background:color-mix(in srgb,var(--s1) 14%,transparent);border-color:transparent;color:var(--ink);font-weight:600}
 .cal .d.today{outline:2px solid var(--s1);outline-offset:-2px}
 .cal .d.edge{background:var(--s1);color:#fff;font-weight:700}
-.cal .d small{font-size:9px;font-weight:600;opacity:.8}
+.cal .d small{font-size:9px;font-weight:600;opacity:.8;line-height:1.25;
+  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.cal .d small.ev{color:var(--brand);opacity:1}
+.cal .d.edge small.ev{color:#fff;text-decoration:underline}
+/* 좁은 화면에서는 글자를 한 단계 줄여 칸을 넘지 않게 합니다 */
+@media(max-width:460px){ .cal .d small{font-size:8px;letter-spacing:-.02em} }
 .calmonth{font-weight:700;font-size:14px;margin:0 0 8px;color:var(--brand)}
 /* 달력: 월과 월 사이에 세로 구분선 */
 @media(min-width:760px){
@@ -405,9 +410,11 @@ const CONFIG = {
      새 안내를 넣으려면 아래 { } 한 덩어리를 복사해 고치면 됩니다.
        when  : 언제        where : 어디서
        bring : 준비물      gather: 몇 시까지 모이나
+       date  : 그 날짜 (yyyy-MM-dd) — [공지 · 일정] 달력에 이 tag 가 함께 표시됩니다
        hide  : 이 시각이 지나면 화면에서 사라짐 (yyyy-MM-dd HH:mm)     */
   events: [
     { tag:"지필평가", title:"지필평가를 실시합니다",
+      date:"2026-09-15",
       when:"9월 15일(화) 15:20 ~ 16:10",
       where:"본관 지하 1층 해오름방",
       bring:"개인 정보화기기 (태블릿 · 휴대폰 · 노트북 · 디벗 등)",
@@ -416,6 +423,7 @@ const CONFIG = {
          + "특강(9/22)과는 별개이며, 특강 내용은 시험에 나오지 않습니다.",
       hide:"2026-09-15 18:00" },
     { tag:"특강", title:"특강을 실시합니다",
+      date:"2026-09-22",
       when:"9월 22일(화) 15:20 ~ 16:10",
       where:"지성관 2층 세미나2실",
       bring:"없음",
@@ -795,6 +803,7 @@ const CONFIG = {
       <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--s1);vertical-align:-1px"></i> 개막 · 폐막일</span>
       <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:color-mix(in srgb,var(--s1) 30%,transparent);vertical-align:-1px"></i> 거래일</span>
       <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--surface-2);border:1px solid var(--border);vertical-align:-1px"></i> 휴장 · 기간 외</span>
+      <span><b style="color:var(--brand)">지필평가 · 특강</b> 표시가 있는 날은 그날 일정이 있습니다</span>
     </div>
   </div>
 
@@ -1730,7 +1739,11 @@ function renderCal(){
       if(ds===today) cl.push('today');
       const mark = ds===CONFIG.startDate?'개막': ds===CONFIG.endDate?'폐막'
                  : ds===(CONFIG.lastOrderDate||'')?'주문끝':'';
-      cells+=`<div class="${cl.join(' ')}">${d}${mark?`<small>${mark}</small>`:''}</div>`;
+      // CONFIG.events 에 date 를 적어 두면 그날 칸에 tag 가 함께 붙습니다 (지필평가 · 특강 등)
+      const evs = (CONFIG.events||[]).filter(x=>x && x.date===ds).map(x=>x.tag||'행사');
+      const labels = (mark?`<small>${mark}</small>`:'')
+                   + evs.map(t=>`<small class="ev">${esc(t)}</small>`).join('');
+      cells+=`<div class="${cl.join(' ')}">${d}${labels}</div>`;
     }
     return `<div><p class="calmonth">${y}년 ${mo+1}월</p><div class="cal">${cells}</div></div>`;
   }).join('');
