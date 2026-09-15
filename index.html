@@ -1386,10 +1386,15 @@ function niceTicks(min,max,count=5){
   return out;
 }
 
+/* 순위 비교 — 반올림 전 평가금액 순, 같으면 수익률, 그래도 같으면 거래 적은 쪽이 위.
+   ★ 2026-09-15 — 수익률은 소수 둘째 자리로 반올림돼 오므로 그것만으로 정렬하면
+   반올림 값이 같은 두 사람의 순서가 뒤바뀝니다. [순위_추이_다시만들기] 와 같은 규칙입니다. */
+const byRank = (a,b)=> (b.value-a.value) || (b.cum-a.cum) || (a.trades-b.trades);
+
 /* ---------- 5-1. 순위 막대 차트 ---------- */
 function drawBar(){
   const svg=$('#barChart'); svg.innerHTML='';
-  const data=[...STATE.rank].sort((a,b)=>b.cum-a.cum).slice(0,CONFIG.topN);
+  const data=[...STATE.rank].sort(byRank).slice(0,CONFIG.topN);
   if(!data.length) return;
 
   const W=880, rowH=34, padT=8, padB=28, padL=104, padR=64;
@@ -1472,7 +1477,7 @@ function drawLine(){
   if(!STATE.daily.length) return;
 
   const dates=[...new Set(STATE.daily.map(r=>r.date))].sort();
-  const top = [...STATE.rank].sort((a,b)=>b.cum-a.cum).slice(0,CONFIG.lineN).map(r=>r.nickname);
+  const top = [...STATE.rank].sort(byRank).slice(0,CONFIG.lineN).map(r=>r.nickname);
   const names=[...top];
   if(STATE.me && !names.includes(STATE.me) && STATE.daily.some(r=>r.nickname===STATE.me)) names.push(STATE.me);
   const AVG='참가자 평균';
@@ -1666,7 +1671,7 @@ function drawScore(){
 function renderRank(){
   const q=$('#rankSearch').value.trim();
   const sort=$('#rankSort').value;
-  let rows=[...STATE.rank].sort((a,b)=> b.cum-a.cum || a.trades-b.trades);
+  let rows=[...STATE.rank].sort(byRank);
   rows.forEach((r,i)=> r.rank=i+1);
   if(sort==='day') rows.sort((a,b)=>b.day-a.day);
   else if(sort==='trades') rows.sort((a,b)=>b.trades-a.trades);
