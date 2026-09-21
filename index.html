@@ -234,6 +234,12 @@ details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-sp
 .evt dt{color:var(--muted);font-size:12.5px;font-weight:600;white-space:nowrap;padding-top:1px}
 .evt dd{margin:0;color:var(--ink-2)}
 .evt dd b{color:var(--ink)}
+/* ★ 2026-09-21 — 일시·장소를 쪽지 제목(16.5px)만큼 크고 굵게. 바뀐 항목에는 '변경' 딱지 */
+.evt dt.big{padding-top:4px}
+.evt dd.big{font-size:16.5px;font-weight:800;letter-spacing:-.02em;line-height:1.35;color:var(--ink)}
+.evt dd.big b{font-weight:800}
+.evt .chg{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:6px;background:var(--s2);color:#fff;
+  font-size:11.5px;font-weight:700;letter-spacing:0;vertical-align:3px}
 .evt .must{
   margin:10px 0 0;font-size:13.5px;font-weight:700;color:var(--s2);
   background:color-mix(in srgb,var(--s2) 10%,transparent);
@@ -272,7 +278,7 @@ details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-sp
 .calmonth{font-weight:700;font-size:14px;margin:0 0 8px;color:var(--brand)}
 /* 달력: 월과 월 사이에 세로 구분선 */
 @media(min-width:760px){
-  #calWrap > div + div{border-left:1px solid var(--axis);padding-left:20px}
+  #calWrap > div:nth-child(2n){border-left:1px solid var(--axis);padding-left:20px}
 }
 @media(max-width:759px){
   #calWrap > div + div{border-top:1px solid var(--axis);padding-top:16px}
@@ -389,6 +395,11 @@ const CONFIG = {
      비워 두면("") 관련 안내가 모두 사라집니다. */
   lastOrderDate : "2026-09-22",
 
+  /* 투자근거 보고서 마감 (yyyy-MM-dd HH:mm).
+     ★ 2026-09-21 — 9/28(월) 17:00 → 10/3(토) 23:00 으로 연장.
+     달력(「보고서 마감」 표시) · 일정 설명 · 운영 단계 · 기본 공지가 이 값 하나를 따라갑니다. */
+  reportDue : "2026-10-03 23:00",
+
   // 주문 접수 시간 (한국시간)
   orderOpen  : 20,                    // 20시 개시
   orderClose : 24,                    // 24시 마감
@@ -424,17 +435,22 @@ const CONFIG = {
       bring:"개인 정보화기기 (태블릿 · 휴대폰 · 노트북 · 디벗 등)",
       gather:"9월 15일(화) 15:15까지 모일 것",
       note:"따로 공부해 오지 않아도 됩니다. 홈페이지 [자료실 · 용어사전] 을 훑어보는 정도면 됩니다. "
-         + "특강(9/22)과는 별개이며, 특강 내용은 시험에 나오지 않습니다.",
+         + "특강(9/29)과는 별개이며, 특강 내용은 시험에 나오지 않습니다.",
       hide:"2026-09-15 18:00" },
+    /* ★ 2026-09-21 — 학교 사정으로 날짜·장소 변경 (9/22 해오름방 → 9/29 지성관 AI교실)
+       changed 에 적은 항목은 화면에서 '변경' 딱지가 붙습니다. plan 은 '일정' 줄로 나옵니다. */
     { tag:"특강", title:"특강을 실시합니다",
-      date:"2026-09-22",
-      when:"9월 22일(화) 15:20 ~ 16:10",
-      where:"본관 지하 1층 해오름방  ★ 장소 변경",
+      date:"2026-09-29",
+      when:"9월 29일(화) 15:20 ~ 16:20",
+      where:"지성관 2층 — 1학년 세미나2실 · 2학년 AI교실",
+      changed:["when","where"],
+      plan:"15:20 주제 특강 ① → 15:45 주제 특강 ② → 16:10 투자보고서 작성 및 생활기록부 관련 안내",
       bring:"없음",
-      gather:"9월 22일(화) 15:15까지 모일 것",
-      note:"★ 장소가 바뀌었습니다 — 지성관 2층 세미나2실 → 본관 지하 1층 해오름방. "
-         + "9/15 지필평가를 치른 그 장소와 같은 곳입니다. 지성관으로 가지 않도록 유의해 주세요.",
-      hide:"2026-09-22 18:00" }
+      gather:"9월 29일(화) 15:15까지 시간 지켜서 모일 것",
+      note:"★ 학교 사정으로 날짜와 장소가 바뀌었습니다 — 9월 22일(화) 본관 지하 1층 해오름방 → "
+         + "9월 29일(화) 지성관 2층 (1학년 세미나2실 · 2학년 세미나실(AI교실)). 날짜와 장소를 꼭 다시 확인해 주세요. "
+         + "투자근거 보고서 마감도 10월 3일(토) 23:00으로 연장되었습니다.",
+      hide:"2026-09-29 18:00" }
   ],
 
   /* ── 지필평가 응시 단추 ─────────────────────────────────
@@ -797,7 +813,7 @@ const CONFIG = {
       <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--s1);vertical-align:-1px"></i> 개막 · 폐막일</span>
       <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:color-mix(in srgb,var(--s1) 30%,transparent);vertical-align:-1px"></i> 거래일</span>
       <span><i style="display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--surface-2);border:1px solid var(--border);vertical-align:-1px"></i> 휴장 · 기간 외</span>
-      <span><b style="color:var(--brand)">지필평가 · 특강</b> 표시가 있는 날은 그날 일정이 있습니다</span>
+      <span><b style="color:var(--brand)">지필평가 · 특강 · 보고서 마감</b> 표시가 있는 날은 그날 일정이 있습니다</span>
     </div>
   </div>
 
@@ -1199,14 +1215,17 @@ function renderEvents(){
     const 그날0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const 남은 = Math.round((그날0 - 오늘0) / 86400000);
     const dday = 남은 > 0 ? ('D-' + 남은) : (남은 === 0 ? '오늘' : '');
+    // changed:['when','where'] 로 적어 둔 항목 옆에 '변경' 딱지
+    const chg = k => (e.changed || []).indexOf(k) >= 0 ? '<span class="chg">변경</span>' : '';
 
     return `<div class="evt">
       <span class="bell" aria-hidden="true">📢</span>
       <div class="body">
         <p class="ttl"><span class="tg">${esc(e.tag||'안내')}</span>${esc(e.title||'')}</p>
         <dl>
-          <dt>일시</dt><dd><b>${esc(e.when||'')}</b></dd>
-          <dt>장소</dt><dd><b>${esc(e.where||'')}</b></dd>
+          <dt class="big">일시</dt><dd class="big"><b>${esc(e.when||'')}</b>${chg('when')}</dd>
+          <dt class="big">장소</dt><dd class="big"><b>${esc(e.where||'')}</b>${chg('where')}</dd>
+          ${e.plan ? `<dt>일정</dt><dd><b>${esc(e.plan)}</b></dd>` : ''}
           <dt>준비물</dt><dd>${esc(e.bring||'없음')}</dd>
         </dl>
         ${e.gather ? `<p class="must">${esc(e.gather)}<br>반드시 참석 바랍니다.</p>` : ''}
@@ -1220,6 +1239,12 @@ function renderEvents(){
 /* ── 마지막 주문일 안내 ──────────────────────────────────
    CONFIG.lastOrderDate 하루만 고치면 아래 문구가 전부 따라옵니다.
    날짜가 지나면 문구가 저절로 바뀌므로 손댈 일이 없습니다. */
+/** 보고서 마감 "10/3(토) 23:00" — CONFIG.reportDue 하나만 고치면 모든 문구가 따라옵니다 */
+function reportDueLabel(){
+  const v=(CONFIG.reportDue||'').trim(); if(!v) return '';
+  const d=parseD(v.slice(0,10));
+  return `${d.getMonth()+1}/${d.getDate()}(${DOW[d.getDay()]}) ${v.slice(11,16)}`.trim();
+}
 function lastOrderLabel(){
   const s=(CONFIG.lastOrderDate||'').trim();
   if(!s) return '';
@@ -1740,16 +1765,21 @@ function defaultNotices(){
     {date:CONFIG.startDate.replace(/-/g,'.'), tag:'안내', title:'닉네임 등록 안내',
      body:'순위표에는 실명 대신 닉네임만 표시됩니다. 닉네임은 행사 기간 중 변경할 수 없습니다'},
     {date:CONFIG.endDate.replace(/-/g,'.'), tag:'마감', title:'투자근거 보고서 제출 마감',
-     body:'~9/28(월)까지 제출해 주세요. 보고서를 제출하지 않으면 우수활동 대상에서 제외됩니다'}
+     body:`~${reportDueLabel()}까지 제출해 주세요. 보고서를 제출하지 않으면 우수활동 대상에서 제외됩니다`}
   ];
 }
 
 function renderCal(){
   const s=parseD(CONFIG.startDate), e=parseD(CONFIG.endDate);
   $('#calSub').textContent = `${CONFIG.startDate.replace(/-/g,'.')}(${DOW[s.getDay()]}) ~ ${CONFIG.endDate.replace(/-/g,'.')}(${DOW[e.getDay()]}) · 총 ${TDAYS.length}거래일`
-    + (CONFIG.lastOrderDate ? ` · 주문은 ${lastOrderLabel()} 밤이 마지막입니다` : '');
+    + (CONFIG.lastOrderDate ? ` · 주문은 ${lastOrderLabel()} 밤이 마지막입니다` : '')
+    + (CONFIG.reportDue ? ` · 보고서 마감 ${reportDueLabel()}` : '');
+  // 폐막 뒤 일정(특강 · 보고서 마감)이 있는 달까지 그립니다
+  let 끝 = e;
+  const 뒤일정 = [(CONFIG.reportDue||'').slice(0,10)].concat((CONFIG.events||[]).map(x=>x&&x.date||''));
+  뒤일정.forEach(d=>{ if(d){ const t=parseD(d); if(t>끝) 끝=t; } });
   const months=[]; const cur=new Date(s.getFullYear(),s.getMonth(),1);
-  while(cur <= e){ months.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); }
+  while(cur <= 끝){ months.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); }
   const today=dstr(nowKST());
   $('#calWrap').innerHTML = months.map(m=>{
     const y=m.getFullYear(), mo=m.getMonth();
@@ -1767,6 +1797,7 @@ function renderCal(){
                  : ds===(CONFIG.lastOrderDate||'')?'주문끝':'';
       // CONFIG.events 에 date 를 적어 두면 그날 칸에 tag 가 함께 붙습니다 (지필평가 · 특강 등)
       const evs = (CONFIG.events||[]).filter(x=>x && x.date===ds).map(x=>x.tag||'행사');
+      if(CONFIG.reportDue && CONFIG.reportDue.slice(0,10)===ds) evs.push('보고서 마감');
       const labels = (mark?`<small>${mark}</small>`:'')
                    + evs.map(t=>`<small class="ev">${esc(t)}</small>`).join('');
       cells+=`<div class="${cl.join(' ')}">${d}${labels}</div>`;
@@ -1783,7 +1814,7 @@ function renderPhases(){
       (CONFIG.lastOrderDate ? `<br><b>주문은 ${lastOrderLabel()} 밤이 마지막</b> · ${e.slice(5)} 폐막일은 주문 없이 그날 종가로 최종 평가` : '')],
     ['③ 중간 점검', `2주차 종료 시점 · 중간 순위 게시, 상위 참가자 매매 사례 공유`],
     ['④ 지필평가', `9/15(화) 15:20~16:00 (잠정) · 경제·주식 기본 상식 40점 (객관식 + 단답형)`],
-    ['⑤ 보고서 제출', `폐막 후 1주 이내 · 종목 선정 근거, 매매 판단, 복기 내용`],
+    ['⑤ 보고서 제출', `${reportDueLabel()} 마감 · 종목 선정 근거, 매매 판단, 복기 내용`],
     ['⑥ 활동내용 평가 및 생활기록부 기재', `합산 점수 산출 → 활동내용 피드백 → 생활기록부 기재`]
   ];
   $('#phaseTable').innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
