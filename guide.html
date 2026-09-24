@@ -442,12 +442,12 @@ footer b{color:var(--mute);font-weight:500}
       sub.textContent='밤 20:00 에 접수창이 열립니다. 낮에는 시세를 확인할 필요가 없습니다.';
       cd.textContent=hhmmss(op-t); cdl.textContent='개시까지';
     } else {
-      lab.textContent='오늘은 접수하지 않습니다';
       var future=DAYS.filter(function(d){ return d>md; });
+      lab.textContent = future.length ? '오늘은 접수하지 않습니다' : '주식주문거래는 모두 완료되었습니다.';
       sub.textContent = future.length
         ? '다음 거래일은 '+future[0]+' 입니다.'
-        : '활동이 모두 끝났습니다. 보고서 마감은 10월 3일(토) 23:00 입니다.';
-      cd.textContent='--:--:--'; cdl.textContent='대기';
+        : '9/29(화) 15:20분에 특강 및 행사 관련 공지가 계획되어 있습니다. 보고서 제출 마감은 10/3(토) ~23:00까지입니다.';
+      cd.textContent='--:--:--'; cdl.textContent = future.length ? '대기' : '종료';
     }
 
     // 달력 오늘/지난날 표시

@@ -253,7 +253,20 @@ details > div{padding:0 0 14px 20px;color:var(--ink-2);font-size:13.5px;white-sp
 }
 .evt .dday .n{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--s2);line-height:1.15}
 .evt .dday .k{font-size:11px;color:var(--muted);margin-top:1px}
+/* ★ 2026-09-24 — 반 칸 쪽지 (특강 / 보고서 마감을 위아래로) */
+.evt.half{padding:11px 16px;gap:12px;align-items:stretch}
+.evt.half .ttl{font-size:18px}
+.evt.half dl{margin:6px 0 0;gap:3px 12px;font-size:13.5px}
+.evt.half dt{font-size:12px;padding-top:2px}
+.evt.half dd.mid{font-weight:700;color:var(--ink)}
+.evt.half .must{margin:7px 0 0;padding:5px 10px;font-size:13px}
+.evt.half .side{flex:none;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:8px}
+.evt.half .go{display:block;text-align:center;background:var(--s2);color:#fff;text-decoration:none;
+  font-size:13px;font-weight:700;border-radius:8px;padding:7px 12px;white-space:nowrap}
+.evt.half .go:hover{filter:brightness(1.08)}
 @media(max-width:560px){
+  .evt.half .side{flex-direction:row;width:100%;align-items:center}
+  .evt.half .go{flex:1}
   .evt{padding:12px 13px}
   .evt dl{grid-template-columns:1fr;gap:1px 0}
   .evt dt{margin-top:6px}
@@ -439,18 +452,28 @@ const CONFIG = {
       hide:"2026-09-15 18:00" },
     /* ★ 2026-09-21 — 학교 사정으로 날짜·장소 변경 (9/22 해오름방 → 9/29 지성관 AI교실)
        changed 에 적은 항목은 화면에서 '변경' 딱지가 붙습니다. plan 은 '일정' 줄로 나옵니다. */
-    { tag:"특강", title:"특강을 실시합니다",
+    /* ★ 2026-09-24 — 특강 · 보고서 마감을 반씩 나눈 두 칸으로 (compact:true).
+       compact 쪽지는 title 을 큰 제목으로 쓰고, rows 의 [항목, 내용] 을 한 줄씩 보여 줍니다.
+       link 가 있으면 오른쪽 아래에 단추가 붙습니다. */
+    { tag:"특강", compact:true,
       date:"2026-09-29",
-      when:"9월 29일(화) 15:20 ~ 16:20",
-      where:"지성관 2층 — 1학년 세미나2실 · 2학년 AI교실",
-      changed:["when","where"],
-      plan:"15:20 주제 특강 ① → 15:45 주제 특강 ② → 16:10 투자보고서 작성 및 생활기록부 관련 안내",
-      bring:"없음",
-      gather:"9월 29일(화) 15:15까지 시간 지켜서 모일 것",
-      note:"★ 학교 사정으로 날짜와 장소가 바뀌었습니다 — 9월 22일(화) 본관 지하 1층 해오름방 → "
-         + "9월 29일(화) 지성관 2층 (1학년 세미나2실 · 2학년 세미나실(AI교실)). 날짜와 장소를 꼭 다시 확인해 주세요. "
-         + "투자근거 보고서 마감도 10월 3일(토) 23:00으로 연장되었습니다.",
-      hide:"2026-09-29 18:00" }
+      title:"특강 : 9/29(화) 15:20~16:20",
+      rows:[
+        ["장소", "지성관 2층 — 1학년 세미나2실 · 2학년 세미나실(AI교실)", "big"],
+        ["일정", "15:20 주제 특강 ① → 15:45 주제 특강 ② → 16:10 투자보고서 작성 및 생활기록부 관련 안내"],
+        ["준비물", "없음 · 9/22 해오름방에서 날짜와 장소가 바뀌었습니다"]
+      ],
+      must:"9월 29일(화) 15:15까지 시간 지켜서 모일 것 · 반드시 참석 바랍니다.",
+      hide:"2026-09-29 18:00" },
+    { tag:"보고서", compact:true,
+      title:"투자근거보고서 제출 마감 : 10/3(토) ~23:00까지",
+      rows:[
+        ["제출", "아래 [보고서 제출하기] 단추 → 구글폼으로 제출", "big"],
+        ["안내", "작성 방법은 9/29(화) 특강 마지막 시간(16:10)에 담당 교사가 설명합니다"],
+        ["유의", "마감이 9/28(월)에서 10/3(토) 23:00으로 연장되었습니다 · 제출하지 않으면 우수활동 대상에서 제외됩니다"]
+      ],
+      link:{ text:"보고서 제출하기 →", key:"formReport" },
+      hide:"2026-10-03 23:59" }
   ],
 
   /* ── 지필평가 응시 단추 ─────────────────────────────────
@@ -669,6 +692,12 @@ const CONFIG = {
       <div class="tip" id="lineTip"></div>
     </div>
     <ul class="legend" id="lineLegend"></ul>
+    <!-- ★ 2026-09-24 — 처음 들어온 사람도 한눈에: 참가자 전체 요약 (순위표 탭 「참가자 분포」와 같은 값) -->
+    <div class="grid g3" style="margin-top:14px">
+      <div class="mini" style="grid-template-columns:1fr"><div><div class="k">참가자 평균</div><div class="v" id="statAvgH">—</div></div></div>
+      <div class="mini" style="grid-template-columns:1fr"><div><div class="k">중앙값</div><div class="v" id="statMedH">—</div></div></div>
+      <div class="mini" style="grid-template-columns:1fr"><div><div class="k">플러스 수익</div><div class="v" id="statPosH">—</div></div></div>
+    </div>
   </div>
 
 </section>
@@ -1217,6 +1246,19 @@ function renderEvents(){
     const dday = 남은 > 0 ? ('D-' + 남은) : (남은 === 0 ? '오늘' : '');
     // changed:['when','where'] 로 적어 둔 항목 옆에 '변경' 딱지
     const chg = k => (e.changed || []).indexOf(k) >= 0 ? '<span class="chg">변경</span>' : '';
+    const ddayBox = dday ? `<div class="dday"><div class="n">${dday}</div><div class="k">${남은===0?'바로 오늘':'남았습니다'}</div></div>` : '';
+
+    if(e.compact){
+      const href = e.link ? (CONFIG[e.link.key] || e.link.href || '') : '';
+      return `<div class="evt half">
+        <div class="body">
+          <p class="ttl"><span class="tg">${esc(e.tag||'안내')}</span>${esc(e.title||'')}</p>
+          <dl>${(e.rows||[]).map(r => `<dt>${esc(r[0])}</dt><dd${r[2]==='big'?' class="mid"':''}>${esc(r[1])}</dd>`).join('')}</dl>
+          ${e.must ? `<p class="must">${esc(e.must)}</p>` : ''}
+        </div>
+        <div class="side">${ddayBox}${href ? `<a class="go" href="${esc(href)}" target="_blank" rel="noopener">${esc(e.link.text)}</a>` : ''}</div>
+      </div>`;
+    }
 
     return `<div class="evt">
       <span class="bell" aria-hidden="true">📢</span>
@@ -1334,8 +1376,8 @@ function tickTimer(){
   }else if(ph==='after'){
     badge.textContent='종료'; badge.className='badge done';
     label='행사 종료';
-    fig = '수고했어요';
-    note = '최종 순위와 시상 결과는 공지사항을 확인해 주세요.';
+    fig = '수고했습니다^^';
+    note = '최종 순위와 시상 결과는 추후에 공지사항을 통해 안내 예정입니다.';
   }else{
     badge.textContent='진행 중'; badge.className='badge live';
     const LOd=(CONFIG.lastOrderDate||'').trim();
@@ -1653,6 +1695,13 @@ function drawHist(){
   $('#statAvg').textContent=fmtPct(vals.reduce((a,b)=>a+b,0)/vals.length);
   $('#statMed').textContent=fmtPct(sorted[Math.floor(sorted.length/2)]);
   $('#statPos').textContent=Math.round(vals.filter(v=>v>0).length/vals.length*100)+'%';
+  // 홈 「누적 수익률 추이」 아래 요약 — 같은 값
+  const 플러스 = vals.filter(v=>v>0).length;
+  if($('#statAvgH')){
+    $('#statAvgH').textContent=$('#statAvg').textContent;
+    $('#statMedH').textContent=$('#statMed').textContent;
+    $('#statPosH').textContent=플러스+'명 / '+vals.length+'명 ('+Math.round(플러스/vals.length*100)+'%)';
+  }
 }
 
 /* ---------- 5-4. 배점 구성 막대 ---------- */
